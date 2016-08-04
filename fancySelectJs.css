@@ -1,0 +1,135 @@
+/* The main fancy-select div */
+.fancySelectJs {
+	position: relative;
+	display: inline-block;
+    min-width: 50px;
+    max-width: 100%;
+    cursor: default;
+    text-align: left;
+	border: 1px solid #CCC;
+}
+/* Disabled fancyselect */
+.fancySelectJs[data-disabled] > .select {
+    background-image: none;
+    color: #888;
+}
+/* The displayed fancy select text */
+.fancySelectJs > .select {
+    position: relative;
+    height: 100%;
+	max-width: 100%;
+    z-index: 9;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    outline: none !important;
+}
+
+.fancySelectJs > .select[data-placeholder] {
+	color: #969696;
+    font-size: 14px;
+    text-indent: 2px;
+}
+
+/* The bounding div of the dropdown box */
+.fancySelectJs_dropdown {
+    display: none;
+    position: absolute;
+    height: auto;
+    max-height: 350px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-top: -1px;
+    background-color: #FAFAFA;
+    border: 1px solid #CCC;
+    z-index: 9001;
+    text-align: left;
+}
+
+/* The dropdown when visible */
+.fancySelectJs_dropdown[data-visible] {
+    display: block;   
+}
+
+/* Each option within the dropdown */
+.fancySelectJs_dropdown > .option {
+    color: #000000;
+    padding: 10px;
+    line-height: 23px;
+    font-size: 14px;
+    position: relative;
+    width: 100%;   
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+}
+
+.fancySelectJs_dropdown > .option.check {
+    padding-left: 50px;   
+}
+
+/* Each option when hovered or highlighted */
+.fancySelectJs_dropdown > .option.hover {
+    background-color: #66B833;
+    border-color: #FFF;
+    color: #FFF;
+}
+.fancySelectJs_dropdown > .option.check[data-checked] > div {
+    background-color: #66B833;
+}
+
+/* Each option when hovered or highlighted */
+.fancySelectJs_dropdown[data-multiple] > .option.hover[data-checked] > div {
+    background-position: -6px -81px;
+}
+.fancySelectJs_dropdown[data-multiple] > .option.hover:not([data-checked]) > div {
+    background-position: -6px -106px;
+}
+
+/* Style the check buttons */
+.fancySelectJs_dropdown > .option.check > div {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 15px;
+    background-color: #FFF;
+    background-image: url("../png/checkbox.png");
+    background-position: -6px -6px;
+    pointer-events: none;
+    line-height: 26px;
+    font-size: 14px;
+    border: 1px solid #CCCCCC;
+    -webkit-border-radius: 1px;
+    -moz-border-radius: 1px;
+    border-radius: 1px;
+    -webkit-background-clip: padding-box; 
+    -moz-background-clip: padding; 
+    background-clip: padding-box;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);   
+}
+.fancySelectJs_dropdown > .option.check.hover > div {
+    background-position: -6px -31px;
+    border-color: #66B833;
+}
+.fancySelectJs_dropdown > .option.check[data-checked] > div {
+    background-color: #66B833;
+    background-position: -6px -56px;  
+    border-color: #66B833;
+}

@@ -1,0 +1,100 @@
+<html>
+	<head>
+		<title>
+			fancySelectJs Demo
+		</title>
+		<style>
+			form {
+				padding: 50px;
+			}
+			form > div {
+				padding-bottom: 20px;
+			}
+			label {
+				display: block;
+			}
+		
+		</style>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+		<script src="fancySelectJs.js"></script>
+		<link rel="stylesheet" type="text/css" href="fancySelectJs.css"/>
+	</head>
+	<body>
+	
+		<h2>
+			fancySelectJs Demo
+		</h2>
+		<form>
+			<div>
+				<label id="l1" for="s1">
+					Value = ""
+				</label>
+				<select id="s1" onchange="updateLabels()">
+					<option>
+						Cats
+					</option>
+					<option>
+						Dogs
+					</option>
+					<option>
+						Goats
+					</option>
+					<option>
+						Nothing
+					</option>
+				</select>
+			</div>
+			
+			<div>
+				<label id="l2" for="s2">
+					Value = ""
+				</label>
+				<select id="s2" onchange="updateLabels()" multiple>
+					<option>
+						Cats
+					</option>
+					<option>
+						Dogs
+					</option>
+					<option>
+						Goats
+					</option>
+					<option>
+						Nothing
+					</option>
+				</select>
+			</div>
+		
+		</form>
+		<div>
+			Initialize fancySelectJs:
+			<div>
+				<button onclick="init()">
+					Initialize
+				</button>
+			</div>
+		</div>
+		
+		
+		<script>
+			var f1, f2;
+		
+			updateLabels();
+			
+			function updateLabels() {
+				document.getElementById("l1").innerHTML = "Value = \"" + $("#s1").val() + "\"";
+				document.getElementById("l2").innerHTML = "Value = \"" + $("#s2").val() + "\"";
+			}
+		
+			function init() {
+				f1 = new fancySelectJs();
+				f1.init(document.getElementById("s1"));
+				
+				f2 = new fancySelectJs();
+				f2.init(document.getElementById("s2"));
+			}
+		
+		</script>
+	
+	</body>
+</head>
