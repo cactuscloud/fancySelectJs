@@ -26,6 +26,12 @@ function fancySelectJs() {
 	this.values = [];
 	this.selectedIndices = [];
 	
+	//State
+	this.frameRequested = false;
+	this.dropdownTop;
+	this.dropdownLeft;
+	this.dropdownWidth;
+	
 	//Styling
 	this.placeholder = "";
 	this.multiplePlaceholder = "Multiple Values";
@@ -95,6 +101,8 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	
 }
 
+
+
 /* Construction functions */
 
 fancySelectJs.prototype.buildGui = function(el) {
@@ -141,6 +149,22 @@ fancySelectJs.prototype.buildGui = function(el) {
 	this.dropdown = dropdown;
 }
 
+/* Destruction functions */
+
+fancySelectJs.prototype.destroy = function() {
+	this.dropdown.innerHTML = "";
+	this.select.innerHTML = "";
+	this.dropdown.parentNode.removeChild(this.dropdown);
+	this.select.parentNode.removeChild(this.select);
+	this.select = null;
+	this.selectText = null;
+	this.dropdown = null;
+	this.template = null;
+	this.parent = null;
+	this.options = null;
+	this.values = null;
+	this.selectedIndices = null;
+}
 
 /* Display update functions */
 
@@ -216,5 +240,62 @@ fancySelectJs.prototype.enable = function() {
 	//Hide the dropdown here
 }
 
+/* Gui control functions */
+
+fancySelectJs.prototype.showDropdown = function() {
+	this.select.setAttribute("data-dropdown", "visible");
+	this.dropdown.setAttribute("data-visible", "true");
+}
+
+fancySelectJs.prototype.hideDropdown = function() {
+	this.select.removeAttribute("data-dropdown");
+	this.dropdown.removeAttribute("data-visible");
+}
+
+/**
+*	Calculates the correct position for the dropdown box.  Queues the dropdown box to reposition
+*	on the next animation frame.
+*/
+fancySelectJs.prototype.queuePositionDropdown = function() {
+	var selectDom = this.select;
+	//If the main select is not visible
+    if(selectDom.offsetParent === null) this.hideDropdown();
+	else {
+		//Get some working variables
+		var parentDom = this.parent;
+        var offset = $(selectDom).offset();
+        var scrollParentOffset = $(parentDom).offset();
+		//Store the old dropdown position (no point in updating the position if it hasn't changed)
+		var oldTop = this.dropdownTop, oldLeft = this.dropdownLeft, oldWidth = this.dropdownWidth;
+        if(parentDom == document.body) {
+			//Get the correct dropdown position relative to the document body
+            this.dropdownTop = offset.top - scrollParentOffset.top + $(selectDom).outerHeight(false);        
+            this.dropdownLeft = offset.left - scrollParentOffset.left;
+        } else {
+			//Get the correct dropdown position relative to the scroll parent
+            this.dropdownTop = offset.top - scrollParentOffset.top + $(parentDom).scrollTop() + $(selectDom).outerHeight();        
+            this.dropdownLeft = offset.left - scrollParentOffset.left + $(parentDom).scrollLeft();
+        }
+        this.dropdownWidth = Math.floor($(selectDom).outerWidth(false));
+		//If the dropdown's size or position has changed, queue redraw on the next animation frame
+		if(oldTop != this.dropdownTop || oldLeft != this.dropdownLeft || oldWidth != this.dropdownWidth) {
+			if(!window.requestAnimationFrame) this.positionDropdown();
+			else if(!this.frameRequested) {
+				window.requestAnimationFrame(this.positionDropdown.bind(this));
+				this.frameRequested = true;
+			}
+		}
+    }
+}
+
+/**
+*	Immediately sets the dropdown's position and width to the stored dropdown top, left, and width
+*	variables in the class.
+*/
+fancySelectJs.prototype.positionDropdown = function() {
+    $(this.dropdown).css({top: this.dropdownTop, left: this.dropdownLeft});
+    $(this.dropdown).outerWidth(this.currentWidth);
+    this.frameRequested = false;
+}
 
 
