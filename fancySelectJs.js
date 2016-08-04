@@ -177,6 +177,9 @@ fancySelectJs.prototype.setEventListeners = function() {
 	//Window events
 	$(window).on("resize orientationchange", this.queuePositionDropdown.bind(this));
 	
+	//Form events
+	$(this.template).closest("form").on("reset", this.reset.bind(this));
+	
 	//Select events
 	$(this.select).on("click", this.selectClick.bind(this));
 	
@@ -189,7 +192,6 @@ fancySelectJs.prototype.setEventListeners = function() {
     
     /*
    
-    $(el).closest("form").on("reset", this.reset.bind(this));
 
 	
 	if(this.multiSelect) $(input).on("keydown",this.fs_ms_InputKeyPress.bind(this));
@@ -299,6 +301,16 @@ fancySelectJs.prototype.selectClick = function(ev) {
 	ev.preventDefault();    
 }
 
+/**
+*	Clears the select box.
+*/
+fancySelectJs.prototype.reset = function() {
+	this.selectedIndices = [];
+	this.values = [];
+	this.updateValues();	
+}
+
+
 
 
 
@@ -371,8 +383,8 @@ fancySelectJs.prototype.queuePositionDropdown = function() {
 		var oldTop = this.dropdownTop, oldLeft = this.dropdownLeft, oldWidth = this.dropdownWidth;
         if(parentDom == document.body) {
 			//Get the correct dropdown position relative to the document body
-            this.dropdownTop = offset.top - scrollParentOffset.top + $(selectDom).outerHeight(false);        
-            this.dropdownLeft = offset.left - scrollParentOffset.left;
+            this.dropdownTop = offset.top - scrollParentOffset.top + $(selectDom).outerHeight(false) + parseInt($(parentDom).css('marginTop'));
+            this.dropdownLeft = offset.left - scrollParentOffset.left + parseInt($(parentDom).css('marginLeft'));
         } else {
 			//Get the correct dropdown position relative to the scroll parent
             this.dropdownTop = offset.top - scrollParentOffset.top + $(parentDom).scrollTop() + $(selectDom).outerHeight();        
@@ -396,7 +408,7 @@ fancySelectJs.prototype.queuePositionDropdown = function() {
 */
 fancySelectJs.prototype.positionDropdown = function() {
     $(this.dropdown).css({top: this.dropdownTop, left: this.dropdownLeft});
-    $(this.dropdown).outerWidth(this.currentWidth);
+    $(this.dropdown).outerWidth(this.dropdownWidth);
     this.frameRequested = false;
 }
 
