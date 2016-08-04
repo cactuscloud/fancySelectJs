@@ -39,6 +39,8 @@ function fancySelectJs() {
 	this.dropdownLeft;
 	this.dropdownWidth;
 	this.dropdownVisible = false;
+	this.mouseY;
+	this.mouseX;
 	
 	//Styling
 	this.placeholder = "";
@@ -58,13 +60,14 @@ function fancySelectJs() {
 *	
 *		-	class					This class will be applied to the new select box
 *		-	data-placeholder		The placeholder
-*		-	multiple				Should this be a multiselect
+*		-	multiple				Should this be a multiple
 *		-	data-value				The starting value of the select
 *		-	data-scroll-parent		The JS compatible element ID of the scrollparent
 *		-	disabled				This will pass through
 *		
 */
 fancySelectJs.prototype.init = function(el, scrollParent) {
+	if(el.fancySelectJs != null) return;
 	this.template = el;
 	
 	//Get placeholder values from the template element
@@ -86,10 +89,10 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	var options = el.children, o, v, n;
 	for(var i = 0, j = options.length; i < j; i++) {
 		o = options[i];
-		v = o.getAttribute("value");
-		n = {value : v, label : options[i].innerHTML};
+		v = o.getAttribute("value").trim();
+		n = {value : v, label : options[i].innerHTML.trim()};
 		this.options.push(n);
-		if(v in selections) {
+		if(selections.includes(v)) {
 			this.values.push(n);
 			this.selectedIndices.push(i);
 		}
@@ -119,7 +122,7 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	this.parent.appendChild(this.dropdown);
 	
 	//Store this instance on the original select
-	//el.fancySelectJs = this;
+	el.fancySelectJs = this;
 	
 }
 
@@ -158,7 +161,7 @@ fancySelectJs.prototype.buildGui = function(el) {
 	//Fill the dropdown
 	var options = el.children, dropdownInner = "";
 	for(var i = 0, j = options.length; i < j; i++) {
-		if(this.multiple) dropdownInner += "<div role=\"option\" class=\"option\" aria-checked=\"false\">" + options[i].innerHTML + "</div>";
+		if(this.multiple) dropdownInner += "<div role=\"option\" class=\"option check\" aria-checked=\"false\">" + options[i].innerHTML + "</div>";
 		else dropdownInner += "<div role=\"option\" class=\"option\" aria-selected=\"false\">" + options[i].innerHTML + "</div>";
 	}
 	
@@ -185,22 +188,14 @@ fancySelectJs.prototype.setEventListeners = function() {
 	
 	//Select content events
 	$(this.selectText).on("blur",this.blur.bind(this));
+	$(this.selectText).on("keydown",this.keydown.bind(this));
 	
 	//Dropdown events
 	$(this.dropdown).on("mousedown", this.dropdownMousedown.bind(this));
-    
-    
-    /*
-   
-
 	
-	if(this.multiSelect) $(input).on("keydown",this.fs_ms_InputKeyPress.bind(this));
-    else $(input).on("keydown",this.fsInputKeyPress.bind(this));
-	*/
 	//Option events
-	$(this.dropdown.children).on("click", this.optionClick).bind(this);
-	$(this.dropdown.children).on("mousemove", this.optionHover).bind(this);
-	
+	$(this.dropdown.children).on("click", this.optionClick.bind(this));
+	$(this.dropdown.children).on("mousemove", this.optionHover.bind(this));
 }
 
 /* Destruction functions */
@@ -210,6 +205,7 @@ fancySelectJs.prototype.setEventListeners = function() {
 *	fancySelectJs instance through code.
 */
 fancySelectJs.prototype.destroy = function() {
+	this.template.fancySelectJs = null;
 	this.dropdown.innerHTML = "";
 	this.select.innerHTML = "";
 	this.dropdown.parentNode.removeChild(this.dropdown);
@@ -234,22 +230,14 @@ fancySelectJs.prototype.updateValues = function() {
 	var options = this.dropdown.children, o;
 	for(var i = 0, j = options.length; i < j; i++) {
 		o = options[i];
-		if(i in this.selectedIndices) {
-			if(this.multiple) {
-				o.setAttribute("aria-checked", "true");
-				o.setAttribute("data-checked", "true");
-			} else {
-				o.setAttribute("aria-selected", "true");
-				o.setAttribute("data-selected", "true");
-			}
+		if(this.selectedIndices.includes(i)) {
+			o.setAttribute("data-selected", "true");
+			if(this.multiple) o.setAttribute("aria-checked", "true");
+			else o.setAttribute("aria-selected", "true");
 		} else {
-			if(this.multiple) {
-				o.setAttribute("aria-checked", "false");
-				o.removeAttribute("data-checked");
-			} else {
-				o.setAttribute("aria-selected", "false");
-				o.removeAttribute("data-selected");
-			}
+			o.removeAttribute("data-selected");
+			if(this.multiple) o.setAttribute("aria-checked", "false");
+			else o.setAttribute("aria-selected", "false");
 		}
 	}
 	//Update the select box
@@ -263,17 +251,52 @@ fancySelectJs.prototype.updateValues = function() {
 		else if(selectionCount == options.length) this.selectText.innerHTML = this.allPlaceholder;
 		else this.selectText.innerHTML = this.multiplePlaceholder;
 	}
-}
-
-
-
-
-/* Event functions */
-fancySelectJs.prototype.optionClick = function(ev) {
+	//Update 
 	
 }
 
+
+fancySelectJs.prototype.selectIndex = function(index) {
+	if(this.multiple) {
+		var i = this.selectedIndices.indexOf(index);
+		if(i == -1) {
+			this.values.push(this.options[index]);
+			this.selectedIndices.push(index);
+		} else {
+			this.selectedIndices.splice(i, 1);
+			this.values.splice(i, 1)
+		}
+	} else {
+		this.values = [];
+		this.selectedIndices = [];
+		this.values.push(this.options[index]);
+		this.selectedIndices.push(index);		
+	}
+	this.updateValues();
+}
+
+/* Event functions */
+fancySelectJs.prototype.optionClick = function(ev) {
+	this.selectIndex($(ev.target).index());
+	if(!this.multiple) this.hideDropdown();
+}
+
 fancySelectJs.prototype.optionHover = function(ev) {
+	if(this.mouseX !== ev.clientX || this.mouseY !== ev.clientY) {
+		this.mouseX = ev.clientX;
+		this.mouseY = ev.clientY;
+		if(ev.target.hasAttribute("data-hover")) return;
+		var o, index = $(ev.target).index(), c = this.dropdown.children;
+		for(var i = 0, j = c.length; i < j; i++) {
+			o = c[i];
+			if(i == index) o.setAttribute("data-hover", "true");
+			else o.removeAttribute("data-hover");
+		}
+	}
+}
+
+fancySelectJs.prototype.keydown = function(ev) {
+	
 	
 }
 
@@ -412,4 +435,57 @@ fancySelectJs.prototype.positionDropdown = function() {
     this.frameRequested = false;
 }
 
+
+/* Misc. */
+/**
+*	Array.includes polyfill (Mozilla)
+*/
+if (!Array.prototype.includes) {
+	Array.prototype.includes = function(searchElement) {
+		if(this == null) {
+			throw new TypeError('Array.prototype.includes called on null or undefined');
+		}
+		var O = Object(this);
+		var len = parseInt(O.length, 10) || 0;
+		if(len === 0) return false;
+		var n = parseInt(arguments[1], 10) || 0;
+		var k;
+		if(n >= 0) k = n;
+		else {
+			k = len + n;
+			if(k < 0) k = 0;
+		}
+		var currentElement;
+		while(k < len) {
+			currentElement = O[k];
+			if (searchElement === currentElement || (searchElement !== searchElement && currentElement !== currentElement)) return true;
+			k++;
+		}
+		return false;
+	};
+}
+
+/**
+*	Array.indexOf polyfill (Mozilla)
+*/
+// Production steps of ECMA-262, Edition 5, 15.4.4.14
+// Reference: http://es5.github.io/#x15.4.4.14
+if (!Array.prototype.indexOf) {
+	Array.prototype.indexOf = function(searchElement, fromIndex) {
+		var k;
+		if(this == null) throw new TypeError('"this" is null or not defined');
+		var o = Object(this);
+		var len = o.length >>> 0;
+		if (len === 0) return -1;
+		var n = +fromIndex || 0;
+		if (Math.abs(n) === Infinity) n = 0;
+		if (n >= len) return -1;
+		k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+		while (k < len) {
+			if (k in o && o[k] === searchElement) return k;
+			k++;
+		}
+		return -1;
+	};
+}
 

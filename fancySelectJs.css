@@ -78,20 +78,21 @@
 }
 
 /* Each option when hovered or highlighted */
-.fancySelectJs_dropdown > .option.hover {
-    background-color: #66B833;
-    border-color: #FFF;
-    color: #FFF;
+.fancySelectJs_dropdown > .option[data-hover] {
+    background-color: #E6E6E6;
+    
 }
-.fancySelectJs_dropdown > .option.check[data-checked] > div {
+.fancySelectJs_dropdown > .option[data-selected] {
     background-color: #66B833;
+	border-color: #FFF;
+    color: #FFF;
 }
 
 /* Each option when hovered or highlighted */
-.fancySelectJs_dropdown[data-multiple] > .option.hover[data-checked] > div {
+.fancySelectJs_dropdown[data-multiple] > .option.hover[data-selected] > div {
     background-position: -6px -81px;
 }
-.fancySelectJs_dropdown[data-multiple] > .option.hover:not([data-checked]) > div {
+.fancySelectJs_dropdown[data-multiple] > .option.hover:not([data-selected]) > div {
     background-position: -6px -106px;
 }
 
@@ -128,7 +129,7 @@
     background-position: -6px -31px;
     border-color: #66B833;
 }
-.fancySelectJs_dropdown > .option.check[data-checked] > div {
+.fancySelectJs_dropdown > .option.check[data-selected] > div {
     background-color: #66B833;
     background-position: -6px -56px;  
     border-color: #66B833;
