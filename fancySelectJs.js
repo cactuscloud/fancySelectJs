@@ -43,15 +43,18 @@ function fancySelectJs() {
 	this.mouseX;//The last recorded x coordinate of the mouse over a select option
 	this.searchString = "";//Any characters recently typed in
 	this.searchTimer;//Clears the searchString after a given amount of time
-	
+	this.initialized = false;
 	//MAY NOT BE NEEDED
-	this.hoverIndex;//The index of the currently hovered element
+	this.hoverIndex = 0;//The index of the currently hovered element
 	
 	//Styling
 	this.placeholder = "";
 	this.multiplePlaceholder = "Multiple Values";
 	this.allPlaceholder = "All";
-
+	
+	//Special functionality
+	this.allIndex = null;
+	this.allIndexSelected = false;
 }
 
 /** 
@@ -60,7 +63,7 @@ function fancySelectJs() {
 *	the dropdown is placed on a modal or other "position: fixed" element.  Without this, the dropdown
 *	will be positioned relative to the document body and not the floating parent element.
 *
-*	Useful attributes to set on the parent element:
+*	Useful select attributes to set on the parent element:
 *	//	-	id						The new select have the same ID (proceeded by "fs_")
 *	
 *		-	class					This class will be applied to the new select box
@@ -69,6 +72,9 @@ function fancySelectJs() {
 *		-	data-value				The starting value of the select
 *		-	data-scroll-parent		The JS compatible element ID of the scrollparent
 *		-	disabled				This will pass through
+*
+*	Useful option attributes:
+*		-	data-all				Sets this to an "All" option which silently selects everything
 *		
 */
 fancySelectJs.prototype.init = function(el, scrollParent) {
@@ -94,6 +100,7 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	var options = el.children, o, v, n;
 	for(var i = 0, j = options.length; i < j; i++) {
 		o = options[i];
+		if(this.multiple && o.hasAttribute("data-all")) this.allIndex = i;
 		v = o.getAttribute("value").trim();
 		n = {value : v, label : options[i].innerHTML.trim()};
 		this.options.push(n);
@@ -117,6 +124,9 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	
 	this.updateValues();
 	
+	//Set hover index to the selected value when only one value is selected
+	if(this.values.length == 1) this.hoverIndex = this.selectedIndices[0];
+	
 	if(el.disabled) this.disable();
 	
 	//Hide the old box and replace it with the new one
@@ -129,9 +139,8 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	//Store this instance on the original select
 	el.fancySelectJs = this;
 	
+	this.initialized = true;
 }
-
-
 
 /* Construction functions */
 
@@ -232,10 +241,18 @@ fancySelectJs.prototype.destroy = function() {
 *	function should be run upon initialization and after every update.
 */
 fancySelectJs.prototype.updateValues = function() {
+	//Handle the "all" option of doom
+	if(this.allIndexSelected) {
+		this.values = [];
+		this.selectedIndices = [];
+		this.values.push(this.options[this.allIndex]);
+		this.selectedIndices.push(this.allIndex);
+	}
 	//Update the dropdown
 	var options = this.dropdown.children, o;
 	for(var i = 0, j = options.length; i < j; i++) {
 		o = options[i];
+		o.removeAttribute("data-hover");
 		if(this.selectedIndices.includes(i)) {
 			o.setAttribute("data-selected", "true");
 			if(this.multiple) o.setAttribute("aria-checked", "true");
@@ -257,8 +274,27 @@ fancySelectJs.prototype.updateValues = function() {
 		else if(selectionCount == options.length) this.selectText.innerHTML = this.allPlaceholder;
 		else this.selectText.innerHTML = this.multiplePlaceholder;
 	}
-	//Update 
-	
+	//Update the actual value to match that required by the "all" option most foul
+	if(this.allIndexSelected) {
+		this.values = [];
+		this.selectedIndices = [];
+		for(var i = 0, j = this.options.length; i < j; i++) {
+			if(i != this.allIndex) {
+				this.values.push(this.options[i]);
+				this.selectedIndices.push(i);
+			}
+		}
+	}
+	//Update the template select
+	if(this.initialized) {//Don't update the select during initialization
+		//Create a value the select element will accept
+		var t = [];
+		for(var i = 0, j = this.values.length; i < j; i++) {
+			t.push(this.values[i].value);
+		}
+		$(this.template).val(t);
+		$(this.template).trigger("onchange");
+	}
 }
 
 /**
@@ -274,6 +310,18 @@ fancySelectJs.prototype.updateValues = function() {
 */
 fancySelectJs.prototype.selectIndex = function(index) {
 	if(this.multiple) {
+		//Handle the dreaded "all" option
+		if(this.allIndexSelected) {
+			this.values = [];
+			this.selectedIndices = [];
+			this.allIndexSelected = false;
+			if(this.allIndex == index) {
+				this.updateValues();
+				return;
+			}
+		} 
+		this.allIndexSelected = (this.allIndex == index);
+		//Handle all the normal stuff
 		var i = this.selectedIndices.indexOf(index);
 		if(i == -1) {
 			this.values.push(this.options[index]);
@@ -288,6 +336,7 @@ fancySelectJs.prototype.selectIndex = function(index) {
 		this.values.push(this.options[index]);
 		this.selectedIndices.push(index);		
 	}
+	this.hoverIndex = index;
 	this.updateValues();
 }
 
@@ -309,19 +358,12 @@ fancySelectJs.prototype.optionHover = function(ev) {
 		this.mouseX = ev.clientX;
 		this.mouseY = ev.clientY;
 		if(ev.target.hasAttribute("data-hover")) return;
-		var o, index = $(ev.target).index(), c = this.dropdown.children;
-		for(var i = 0, j = c.length; i < j; i++) {
-			o = c[i];
-			if(i == index) {
-				o.setAttribute("data-hover", "true");
-				this.hoverIndex = i;
-			} else o.removeAttribute("data-hover");
-		}
+		this.highlightIndex($(ev.target).index());
 	}
 }
 
 /**
-*
+*	Handles all key press events
 */
 fancySelectJs.prototype.keydown = function(ev) {
 	
@@ -329,9 +371,11 @@ fancySelectJs.prototype.keydown = function(ev) {
 	var key = ev.keyCode;
 
 	//Handle searching within the dropdown (the dropdown is visible and a letter or a number has been pressed)
-	if(!this.multiple && this.dropdownVisible && ((key > 47 && key < 58) || (key > 64 && key < 91) || (key > 95 && key < 106))) {
+	if(this.dropdownVisible && ((key > 47 && key < 58) || (key > 64 && key < 91) || (key > 95 && key < 106))) {
 		clearTimeout(this.searchTimer);
+		//Record recent key strokes
 		this.searchString += String.fromCharCode(key);
+		//Search for a matching label in the dropdown
         var foundIndex = -1;
         for(var i = 0, j = this.options.length; i < j; i++) {
             if(this.options[i].label.toUpperCase().replace(/\s/,"").startsWith(this.searchString)) {
@@ -339,16 +383,65 @@ fancySelectJs.prototype.keydown = function(ev) {
                 break;
             }
         }
+		//Schedule the deletion of the pushed keystrokes
         this.searchTimer = setTimeout(this.resetSearchString.bind(this), 800);
         if(foundIndex === -1) return;
-		this.selectIndex(foundIndex);
+		//If there is a match, highlight it in a multiselect, or select in in a single select
+		if(this.multiple) this.highlightIndex(foundIndex);
+		else this.selectIndex(foundIndex);
+		//Scroll the selection into view
         this.scrollOptionIntoView(foundIndex);
         return;
 	}
-	
-	
+	//Space
+	if(key == 32) {
+		//Stop the screen from scrolling
+		ev.preventDefault();
+		//Select the hovered index
+		if(this.dropdownVisible && this.hoverIndex != null) this.selectIndex(this.hoverIndex);
+		return;
+	}
+	//Enter
+	if(key == 13) {
+		if(this.dropdownVisible) {
+			this.hideDropdown();
+			//Stop the form from submitting if the select box is open
+			ev.preventDefault();
+		}
+		return;
+	}
+	//Escape key
+	if(key == 27) {
+		if(this.dropdownVisible) {
+			this.hideDropdown();
+			ev.preventDefault();
+		}
+		return;
+	}
+	//Down key or Up key
+	if(key == 40 || key == 38) {
+		if(this.dropdownVisible) {
+			//Down key
+			if(key == 40) {
+				if(this.hoverIndex == null) this.hoverIndex = this.options.length - 1;
+				else this.hoverIndex++;
+			} else {//Up key
+				if(this.hoverIndex == null) this.hoverIndex = 0;
+				else this.hoverIndex--;
+			}
+			//Handle index overflow
+			if(this.hoverIndex < 0) this.hoverIndex = this.options.length - 1;
+			else if(this.hoverIndex >= this.options.length) this.hoverIndex = 0;
+			//Update gui
+			if(this.multiple) this.highlightIndex(this.hoverIndex);
+			else this.selectIndex(this.hoverIndex);
+			this.scrollOptionIntoView(this.hoverIndex);
+			//Stop the screen from scrolling
+			ev.preventDefault();
+		}
+		return;
+	}
 }
-
 
 fancySelectJs.prototype.resetSearchString = function() {
 	clearTimeout(this.searchTimer);
@@ -391,10 +484,6 @@ fancySelectJs.prototype.reset = function() {
 	this.updateValues();	
 }
 
-
-
-
-
 /* State change functions */
 /**
 *	Disables a fancySelectJs, rendering it non-selectable and non-changeable by the user.
@@ -416,6 +505,17 @@ fancySelectJs.prototype.enable = function() {
 }
 
 /* Gui control functions */
+fancySelectJs.prototype.highlightIndex = function(index) {
+	var o, c = this.dropdown.children;
+	for(var i = 0, j = c.length; i < j; i++) {
+		o = c[i];
+		if(i == index) {
+			o.setAttribute("data-hover", "true");
+			this.hoverIndex = i;
+		} else o.removeAttribute("data-hover");
+	}
+}
+
 /**
 *	Shows the dropdown box.
 */
@@ -436,7 +536,6 @@ fancySelectJs.prototype.hideDropdown = function() {
 		this.select.removeAttribute("data-dropdown");
 		this.dropdown.removeAttribute("data-visible");
 		this.dropdownVisible = false;
-		this.hoverIndex = null;
 	}
 }
 
@@ -566,4 +665,3 @@ if (!Array.prototype.indexOf) {
 		return -1;
 	};
 }
-

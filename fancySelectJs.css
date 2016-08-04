@@ -79,8 +79,10 @@
 
 /* Each option when hovered or highlighted */
 .fancySelectJs_dropdown > .option[data-hover] {
-    background-color: #E6E6E6;
-    
+    background-color: #E4E4E4;
+}
+.fancySelectJs_dropdown > .option[data-selected][data-hover] {
+    background-color: #55A722;
 }
 .fancySelectJs_dropdown > .option[data-selected] {
     background-color: #66B833;

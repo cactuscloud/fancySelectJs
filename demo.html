@@ -13,6 +13,9 @@
 			label {
 				display: block;
 			}
+			select {
+				width: 200px;
+			}
 		
 		</style>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -50,6 +53,9 @@
 					Value = ""
 				</label>
 				<select id="s2" onchange="updateLabels()" multiple>
+					<option value="this should never appear" data-all="true">
+						All
+					</option>
 					<option value="cats">
 						Cats
 					</option>
