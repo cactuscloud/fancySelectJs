@@ -1,3 +1,10 @@
+/**
+*
+*
+*
+*
+*/
+
 function fancySelectJs() {
 	
 	//Constants
@@ -31,6 +38,7 @@ function fancySelectJs() {
 	this.dropdownTop;
 	this.dropdownLeft;
 	this.dropdownWidth;
+	this.dropdownVisible = false;
 	
 	//Styling
 	this.placeholder = "";
@@ -39,17 +47,22 @@ function fancySelectJs() {
 
 }
 
-/* 
-	Useful attributes to set in the parent element:
-	//	-	id						The new select have the same ID (proceeded by "fs_")
-	
-		-	class					This class will be applied to the new select box
-		-	data-placeholder		The placeholder
-		-	multiple				Should this be a multiselect
-		-	data-value				The starting value of the select
-		-	data-scroll-parent		The JS compatible element ID of the scrollparent
-		-	disabled				This will pass through
-		
+/** 
+*	fancySelectJs constructor.  Builds a new fancySelectJs instance from a given SELECT element.  A
+*	scroll parent element may be optionally supplied.  A scroll parent should only be supplied when
+*	the dropdown is placed on a modal or other "position: fixed" element.  Without this, the dropdown
+*	will be positioned relative to the document body and not the floating parent element.
+*
+*	Useful attributes to set on the parent element:
+*	//	-	id						The new select have the same ID (proceeded by "fs_")
+*	
+*		-	class					This class will be applied to the new select box
+*		-	data-placeholder		The placeholder
+*		-	multiple				Should this be a multiselect
+*		-	data-value				The starting value of the select
+*		-	data-scroll-parent		The JS compatible element ID of the scrollparent
+*		-	disabled				This will pass through
+*		
 */
 fancySelectJs.prototype.init = function(el, scrollParent) {
 	this.template = el;
@@ -64,7 +77,11 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	if(el.hasAttribute("data-value")) {
 		if(this.multiple) selections = el.getAttribute("data-value").split(this.DELIMITER);
 		else selections.push(el.getAttribute("data-value"));
+	} else {
+		if(this.multiple) selections = ($(el).val() + "").split(",");
+		else selections.push($(el).val());
 	}
+	
 	//Get contents and selections
 	var options = el.children, o, v, n;
 	for(var i = 0, j = options.length; i < j; i++) {
@@ -88,6 +105,8 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	
 	this.buildGui(el);
 	
+	this.setEventListeners();
+	
 	this.updateValues();
 	
 	if(el.disabled) this.disable();
@@ -95,6 +114,9 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	//Hide the old box and replace it with the new one
 	el.style.display = "none";
     el.parentElement.insertBefore(this.select, el);
+	
+	//Add the dropdown to the page
+	this.parent.appendChild(this.dropdown);
 	
 	//Store this instance on the original select
 	//el.fancySelectJs = this;
@@ -105,6 +127,9 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 
 /* Construction functions */
 
+/**
+*	Builds the GUI elements of the fancySelectJs.
+*/
 fancySelectJs.prototype.buildGui = function(el) {
 	var doc = document;
 	
@@ -133,24 +158,55 @@ fancySelectJs.prototype.buildGui = function(el) {
 	//Fill the dropdown
 	var options = el.children, dropdownInner = "";
 	for(var i = 0, j = options.length; i < j; i++) {
-		if(this.multiple) dropdownInner += "<div role=\"option\" class=\"option\" aria-checked=\"false\">options[i].innerHTML</div>";
-		else dropdownInner += "<div role=\"option\" class=\"option\" aria-selected=\"false\">options[i].innerHTML</div>";
+		if(this.multiple) dropdownInner += "<div role=\"option\" class=\"option\" aria-checked=\"false\">" + options[i].innerHTML + "</div>";
+		else dropdownInner += "<div role=\"option\" class=\"option\" aria-selected=\"false\">" + options[i].innerHTML + "</div>";
 	}
 	
 	dropdown.innerHTML = dropdownInner;
-	
-	//Arrange event listeners
-	$(dropdown.children).on("click", this.optionClick).bind(this);
-	$(dropdown.children).on("mousemove", this.optionHover).bind(this);
-	
 	
 	this.selectText = inner;
 	this.select = selectBox;
 	this.dropdown = dropdown;
 }
 
-/* Destruction functions */
+/**
+*	Assignes the event listeners required for the fancySelectJs to operate.
+*/
+fancySelectJs.prototype.setEventListeners = function() {
+	
+	//Window events
+	$(window).on("resize orientationchange", this.queuePositionDropdown.bind(this));
+	
+	//Select events
+	$(this.select).on("click", this.selectClick.bind(this));
+	
+	//Select content events
+	$(this.selectText).on("blur",this.blur.bind(this));
+	
+	//Dropdown events
+	$(this.dropdown).on("mousedown", this.dropdownMousedown.bind(this));
+    
+    
+    /*
+   
+    $(el).closest("form").on("reset", this.reset.bind(this));
 
+	
+	if(this.multiSelect) $(input).on("keydown",this.fs_ms_InputKeyPress.bind(this));
+    else $(input).on("keydown",this.fsInputKeyPress.bind(this));
+	*/
+	//Option events
+	$(this.dropdown.children).on("click", this.optionClick).bind(this);
+	$(this.dropdown.children).on("mousemove", this.optionHover).bind(this);
+	
+}
+
+/* Destruction functions */
+/**
+*	Destroys a fancySelectJs instance and its associated HTML elements.  This will free up the data associated
+*	with this instance to be ready for garbage collection.  This should be run before deleting a 
+*	fancySelectJs instance through code.
+*/
 fancySelectJs.prototype.destroy = function() {
 	this.dropdown.innerHTML = "";
 	this.select.innerHTML = "";
@@ -167,7 +223,6 @@ fancySelectJs.prototype.destroy = function() {
 }
 
 /* Display update functions */
-
 /**
 *	Updates the element to match the values stored in this.values and this.selectedIndices. This
 *	function should be run upon initialization and after every update.
@@ -195,7 +250,6 @@ fancySelectJs.prototype.updateValues = function() {
 			}
 		}
 	}
-	
 	//Update the select box
 	var selectionCount = this.selectedIndices.length;
 	if(selectionCount == 0) {
@@ -221,35 +275,83 @@ fancySelectJs.prototype.optionHover = function(ev) {
 	
 }
 
+fancySelectJs.prototype.blur = function(ev) {
+	//Another Fix for Microsoft's broken browser
+    if(document.activeElement === this.DOM_dropdown) {
+        e.target.focus();  
+        return;
+    }
+	this.hideDropdown();
+}
+
+
+
+fancySelectJs.prototype.dropdownMousedown = function(ev) {
+	ev.preventDefault();    
+}
+
+
+
+
+
+fancySelectJs.prototype.selectClick = function(ev) {
+	if(!this.disabled && $(ev.target).hasClass("select")) this.toggleDropdown();
+	ev.preventDefault();    
+}
 
 
 
 
 /* State change functions */
+/**
+*	Disables a fancySelectJs, rendering it non-selectable and non-changeable by the user.
+*/
 fancySelectJs.prototype.disable = function() {
 	this.disabled = true;
 	this.select.setAttribute("data-disabled", "true");
 	this.select.tabIndex = -1;
-	//Hide the dropdown here
+	this.hideDropdown();
 }
 
+/**
+*	Enables a fancySelectJs, rendering it selectable and changeable by the user.
+*/
 fancySelectJs.prototype.enable = function() {
 	this.disabled = false;
 	this.select.removeAttribute("data-disabled");
 	this.select.tabIndex = 0;
-	//Hide the dropdown here
 }
 
 /* Gui control functions */
-
+/**
+*	Shows the dropdown box.
+*/
 fancySelectJs.prototype.showDropdown = function() {
-	this.select.setAttribute("data-dropdown", "visible");
-	this.dropdown.setAttribute("data-visible", "true");
+	if(!this.dropdownVisible) {
+		this.queuePositionDropdown();
+		this.select.setAttribute("data-dropdown", "visible");
+		this.dropdown.setAttribute("data-visible", "true");
+		this.dropdownVisible = true;
+	}
 }
 
+/**
+*	Hides the dropdown box.
+*/
 fancySelectJs.prototype.hideDropdown = function() {
-	this.select.removeAttribute("data-dropdown");
-	this.dropdown.removeAttribute("data-visible");
+	if(this.dropdownVisible) {
+		this.select.removeAttribute("data-dropdown");
+		this.dropdown.removeAttribute("data-visible");
+		this.dropdownVisible = false;
+	}
+}
+
+/**
+*	Toggles the dropdown box.
+*/
+fancySelectJs.prototype.toggleDropdown = function() {
+	if(this.dropdownVisible) this.hideDropdown();
+	else this.showDropdown();
 }
 
 /**
