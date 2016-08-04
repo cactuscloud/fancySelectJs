@@ -24,23 +24,28 @@ function fancySelectJs() {
 	this.parent = null;
 	
 	//Mode
-	this.multiple = false;
-	this.disabled = false;
+	this.multiple = false;//Is this a multi-select
+	this.disabled = false;//Is this disabled
 	this.length = 0;//Number of options
 	
 	//Session
-	this.options = [];
-	this.values = [];
-	this.selectedIndices = [];
+	this.options = [];//All available option's values and labels
+	this.values = [];//The value and labels of any selected options
+	this.selectedIndices = [];//The indices of any selected options
 	
 	//State
-	this.frameRequested = false;
-	this.dropdownTop;
-	this.dropdownLeft;
-	this.dropdownWidth;
-	this.dropdownVisible = false;
-	this.mouseY;
-	this.mouseX;
+	this.frameRequested = false;//Has an animation frame already been requested
+	this.dropdownTop;//The y coordinate of the dropdown box
+	this.dropdownLeft;//The x coordinate of the dropdown box
+	this.dropdownWidth;//The width of the dropdown box
+	this.dropdownVisible = false;//Is the dropdown currently visible?
+	this.mouseY;//The last recorded y coordinate of the mouse over a select option
+	this.mouseX;//The last recorded x coordinate of the mouse over a select option
+	this.searchString = "";//Any characters recently typed in
+	this.searchTimer;//Clears the searchString after a given amount of time
+	
+	//MAY NOT BE NEEDED
+	this.hoverIndex;//The index of the currently hovered element
 	
 	//Styling
 	this.placeholder = "";
@@ -205,6 +210,7 @@ fancySelectJs.prototype.setEventListeners = function() {
 *	fancySelectJs instance through code.
 */
 fancySelectJs.prototype.destroy = function() {
+	this.clearTimeout(this.searchTimer);
 	this.template.fancySelectJs = null;
 	this.dropdown.innerHTML = "";
 	this.select.innerHTML = "";
@@ -255,7 +261,17 @@ fancySelectJs.prototype.updateValues = function() {
 	
 }
 
-
+/**
+*	Selects an option at a given index.
+*	If this is a single select dropdown:
+*		-	All indices will be deselected
+*		-	The specified index will be selected
+*	If this is a multi select dropdown:
+*		-	The selected index will be toggled:
+*			-	If it is already selected, it will be deselected
+*			-	If it is not selected already, it will be selected
+*		-	No other indices will be affected
+*/
 fancySelectJs.prototype.selectIndex = function(index) {
 	if(this.multiple) {
 		var i = this.selectedIndices.indexOf(index);
@@ -276,11 +292,18 @@ fancySelectJs.prototype.selectIndex = function(index) {
 }
 
 /* Event functions */
+/**
+*	Triggers the selection of a given option in a single select dropdown context.  Toggles the
+*	selection of a given index in a multiselect context.
+*/
 fancySelectJs.prototype.optionClick = function(ev) {
 	this.selectIndex($(ev.target).index());
 	if(!this.multiple) this.hideDropdown();
 }
 
+/**
+*	Handles selecting a hovered index in the dropdown on mouse over.
+*/
 fancySelectJs.prototype.optionHover = function(ev) {
 	if(this.mouseX !== ev.clientX || this.mouseY !== ev.clientY) {
 		this.mouseX = ev.clientX;
@@ -289,17 +312,52 @@ fancySelectJs.prototype.optionHover = function(ev) {
 		var o, index = $(ev.target).index(), c = this.dropdown.children;
 		for(var i = 0, j = c.length; i < j; i++) {
 			o = c[i];
-			if(i == index) o.setAttribute("data-hover", "true");
-			else o.removeAttribute("data-hover");
+			if(i == index) {
+				o.setAttribute("data-hover", "true");
+				this.hoverIndex = i;
+			} else o.removeAttribute("data-hover");
 		}
 	}
 }
 
+/**
+*
+*/
 fancySelectJs.prototype.keydown = function(ev) {
+	
+	if(this.disabled || this.options.length == 0) return;
+	var key = ev.keyCode;
+
+	//Handle searching within the dropdown (the dropdown is visible and a letter or a number has been pressed)
+	if(!this.multiple && this.dropdownVisible && ((key > 47 && key < 58) || (key > 64 && key < 91) || (key > 95 && key < 106))) {
+		clearTimeout(this.searchTimer);
+		this.searchString += String.fromCharCode(key);
+        var foundIndex = -1;
+        for(var i = 0, j = this.options.length; i < j; i++) {
+            if(this.options[i].label.toUpperCase().replace(/\s/,"").startsWith(this.searchString)) {
+                foundIndex = i;
+                break;
+            }
+        }
+        this.searchTimer = setTimeout(this.resetSearchString.bind(this), 800);
+        if(foundIndex === -1) return;
+		this.selectIndex(foundIndex);
+        this.scrollOptionIntoView(foundIndex);
+        return;
+	}
 	
 	
 }
 
+
+fancySelectJs.prototype.resetSearchString = function() {
+	clearTimeout(this.searchTimer);
+	this.searchString = "";
+}
+
+/**
+*	Designed to handle the dropdown's deselect (blur) event
+*/
 fancySelectJs.prototype.blur = function(ev) {
 	//Another Fix for Microsoft's broken browser
     if(document.activeElement === this.DOM_dropdown) {
@@ -310,18 +368,18 @@ fancySelectJs.prototype.blur = function(ev) {
 }
 
 
-
+/**
+*	Stops the select box main area from losing focus on click of the dropdown.
+*/
 fancySelectJs.prototype.dropdownMousedown = function(ev) {
 	ev.preventDefault();    
 }
 
-
-
-
-
+/**
+*	Handles the onclick events on the non-option areas of the dropdown.
+*/
 fancySelectJs.prototype.selectClick = function(ev) {
 	if(!this.disabled && $(ev.target).hasClass("select")) this.toggleDropdown();
-	ev.preventDefault();    
 }
 
 /**
@@ -378,6 +436,7 @@ fancySelectJs.prototype.hideDropdown = function() {
 		this.select.removeAttribute("data-dropdown");
 		this.dropdown.removeAttribute("data-visible");
 		this.dropdownVisible = false;
+		this.hoverIndex = null;
 	}
 }
 
@@ -433,6 +492,25 @@ fancySelectJs.prototype.positionDropdown = function() {
     $(this.dropdown).css({top: this.dropdownTop, left: this.dropdownLeft});
     $(this.dropdown).outerWidth(this.dropdownWidth);
     this.frameRequested = false;
+}
+
+/**
+*	Scrolls the select option at a given index into view within the dropdown
+*/
+fancySelectJs.prototype.scrollOptionIntoView = function(index) {
+	//Get the selected option
+	var dropdown = this.dropdown;
+	var option = dropdown.children[index];
+    //Scroll dropdown to show option
+    var optTop = $(option).position().top;
+    var optHt = $(option).innerHeight();
+    var dropTop = $(dropdown).offset().top;
+    var dropHt = $(dropdown).innerHeight();
+    if(optTop < 0) dropdown.scrollTop += optTop;
+    else if(optTop + optHt > dropHt) dropdown.scrollTop += (optTop + optHt - dropHt);
+    //Scroll window into view
+    if($(option).offset().top < $(window).scrollTop()) option.scrollIntoView(true);
+    else if($(option).offset().top + $(option).innerHeight() > $(window).scrollTop() + window.innerHeight) option.scrollIntoView(false);
 }
 
 
