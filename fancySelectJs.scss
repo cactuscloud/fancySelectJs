@@ -1,9 +1,9 @@
-@font-face {
+/*@font-face {
     font-family: "iconset";
     src: url('fonts/iconset.woff') format('woff'), url('fonts/iconset.ttf') format('truetype'), url('fonts/iconset.svg') format('svg');
     font-weight: normal;
     font-style: normal;
-}
+}*/
 //The main fancy-select div
 .fancySelectJs {
 	position: relative;
@@ -25,7 +25,10 @@
 		position: relative;
 		height: 100%;
 		max-width: 100%;
+		width: 100%;
 		z-index: 9;
+		padding-left: 7px;
+		padding-right: 22px;
 		-webkit-touch-callout: none;
 		-webkit-user-select: none;
 		-khtml-user-select: none;
@@ -42,10 +45,10 @@
 			right: 6px;
 			font-family: "iconset";
 			font-size: 0.6em;
+			color: #CCC;
 		}
 		&[data-placeholder] {
 			color: #969696;
-			font-size: 14px;
 			text-indent: 2px;
 		}
 	}
@@ -102,15 +105,15 @@
 		}
 		//Check box select
 		&.check {
-			padding-left: 50px;   
+			padding-left: 38px;   
 			&:before {
 				content: "\e619";
 				position: absolute;
-				top: 12px;
+				top: calc(50% - 8.5px);
 				left: 10px;
 				width: 17px;
 				height: 17px;
-				line-height: 17px;	
+				line-height: 15px;	
 				font-family: "iconset";
 				font-size: 12px;
 				text-align: center;

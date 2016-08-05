@@ -71,6 +71,7 @@ function fancySelectJs() {
 *		-	data-value				The starting value of the select
 *		-	data-scroll-parent		The JS compatible element ID of the scrollparent
 *		-	disabled				This will pass through
+*		-	data-all-index			The index of the all component (this takes precedence over data-all) - credit goes to salesforce for fucking interfering with their html attributes again.  fuck!	
 *
 *	Useful option attributes:
 *		-	data-all				Sets this to an "All" option which silently selects everything
@@ -106,8 +107,12 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 		if(selections.includes(v)) {
 			this.values.push(n);
 			this.selectedIndices.push(i);
+			if(this.allIndex == i) this.allIndexSelected = true;
 		}
 	}
+	
+	//Get the all index as specified on the template select (has to be done due to another SF incompatabilty... bastards...)
+	if(el.hasAttribute("data-all-index")) this.allIndex = parseInt(el.getAttribute("data-all-index"));
 	
 	//Handle scroll parent
 	var doc = document;
@@ -163,7 +168,7 @@ fancySelectJs.prototype.buildGui = function(el) {
 	inner.tabIndex = 0;
 	inner.style.lineHeight = $(el).outerHeight()+"px";
 	inner.style.height = $(el).css("height");
-	inner.style.width = el.style.width || $(el).css("width");
+	//inner.style.width = el.style.width || $(el).css("width");
 	selectBox.appendChild(inner);
 	
 	//Create the dropdown
@@ -241,11 +246,14 @@ fancySelectJs.prototype.destroy = function() {
 */
 fancySelectJs.prototype.updateValues = function() {
 	//Handle the "all" option of doom
-	if(this.allIndexSelected) {
+	//	- 	If the "all option is selected", or
+	//	-	if the all option exists and nothing is selected, or
+	if(this.allIndexSelected || (this.allIndex != null && this.values.length == 0)) {
 		this.values = [];
 		this.selectedIndices = [];
 		this.values.push(this.options[this.allIndex]);
 		this.selectedIndices.push(this.allIndex);
+		this.allIndexSelected = true;
 	}
 	//Update the dropdown
 	var options = this.dropdown.children, o;
@@ -284,9 +292,11 @@ fancySelectJs.prototype.updateValues = function() {
 			}
 		}
 	}
+	console.log('nnn');
 	//Update the template select
-	if(this.initialized) {//Don't update the select during initialization
+	if(this.initialized || this.allIndexSelected) {//Don't update the select during initialization
 		//Create a value the select element will accept
+	console.log('sdssd');
 		var t = [];
 		for(var i = 0, j = this.values.length; i < j; i++) {
 			t.push(this.values[i].value);
@@ -310,15 +320,11 @@ fancySelectJs.prototype.updateValues = function() {
 fancySelectJs.prototype.selectIndex = function(index) {
 	if(this.multiple) {
 		//Handle the dreaded "all" option
+		if(this.allIndexSelected && this.allIndex == index) return;
 		if(this.allIndexSelected) {
 			this.values = [];
 			this.selectedIndices = [];
-			this.allIndexSelected = false;
-			if(this.allIndex == index) {
-				this.updateValues();
-				return;
-			}
-		} 
+		}
 		this.allIndexSelected = (this.allIndex == index);
 		//Handle all the normal stuff
 		var i = this.selectedIndices.indexOf(index);
@@ -480,7 +486,23 @@ fancySelectJs.prototype.selectClick = function(ev) {
 fancySelectJs.prototype.reset = function() {
 	this.selectedIndices = [];
 	this.values = [];
-	this.updateValues();	
+	this.updateValues();
+}
+
+/**
+*	Sets the value of the search box
+*/
+fancySelectJs.prototype.setValue = function(value) {
+	this.selectedIndices = [];
+	this.values = [];
+	var o, newValues = value.split(this.DELIMITER);
+	for(var i = 0, j = this.options.length; i < j; i++) {
+		o = options[i];
+		if(newValues.includes(o.value)) {
+			this.selectedIndices.push(i);
+			this.values.push(o.value);
+		}
+	}
 }
 
 /* State change functions */
