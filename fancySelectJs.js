@@ -10,7 +10,6 @@ function fancySelectJs() {
 	//Constants
 	this.DELIMITER = ",";
 	
-	
 	//DOM elements
 	//The new select box which will be visible
 	this.select = null;
