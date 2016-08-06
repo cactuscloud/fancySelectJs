@@ -292,11 +292,9 @@ fancySelectJs.prototype.updateValues = function() {
 			}
 		}
 	}
-	console.log('nnn');
 	//Update the template select
 	if(this.initialized || this.allIndexSelected) {//Don't update the select during initialization
 		//Create a value the select element will accept
-	console.log('sdssd');
 		var t = [];
 		for(var i = 0, j = this.values.length; i < j; i++) {
 			t.push(this.values[i].value);
@@ -497,12 +495,20 @@ fancySelectJs.prototype.setValue = function(value) {
 	this.values = [];
 	var o, newValues = value.split(this.DELIMITER);
 	for(var i = 0, j = this.options.length; i < j; i++) {
-		o = options[i];
+		o = this.options[i];
 		if(newValues.includes(o.value)) {
 			this.selectedIndices.push(i);
-			this.values.push(o.value);
+			this.values.push(o);
 		}
 	}
+	this.updateValues();
+}
+
+/**
+*	Gets the value of the search box
+*/
+fancySelectJs.prototype.getValue = function() {
+	return $(this.template).val();
 }
 
 /* State change functions */
