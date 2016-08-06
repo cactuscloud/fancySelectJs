@@ -6,11 +6,12 @@ Purpose:
 - To have multi-select / multi-check functionality
 - To be Salesforce compatible
 
+Notes: (Important stuff)
+- This requires JQuery
+- All options must have a value attribute set
+- All options values must not contain any commas
+
 Some instructions: (not too many)
-	Notes: (Important stuff)
-		- This requires JQuery
-		- All options must have a value attribute set
-			- These values must no contain any commas
 
 	Initialization:
 		1.  Reference the js/multiSelect.min.js script with your page
