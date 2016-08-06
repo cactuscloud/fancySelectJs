@@ -63,8 +63,6 @@ function fancySelectJs() {
 *	will be positioned relative to the document body and not the floating parent element.
 *
 *	Useful select attributes to set on the parent element:
-*	//	-	id						The new select have the same ID (proceeded by "fs_")
-*	
 *		-	class					This class will be applied to the new select box
 *		-	data-placeholder		The placeholder
 *		-	multiple				Should this be a multiple
@@ -77,13 +75,14 @@ function fancySelectJs() {
 *		-	data-all				Sets this to an "All" option which silently selects everything
 *		
 */
-fancySelectJs.prototype.init = function(el, scrollParent) {
+fancySelectJs.prototype.init = function(el) {
 	if(el.fancySelectJs != null) return;
 	this.template = el;
 	
 	//Get placeholder values from the template element
 	this.placeholder = el.getAttribute("data-placeholder") || "";
 	this.multiple = el.multiple;
+	el.oldSize = el.size;
 	el.size = 1;//Normalize the height of the initial select
 	
 	//Get value
@@ -134,7 +133,7 @@ fancySelectJs.prototype.init = function(el, scrollParent) {
 	if(el.disabled) this.disable();
 	
 	//Hide the old box and replace it with the new one
-	el.style.display = "none";
+	$(el).hide();
     el.parentElement.insertBefore(this.select, el);
 	
 	//Add the dropdown to the page
@@ -223,20 +222,26 @@ fancySelectJs.prototype.setEventListeners = function() {
 *	fancySelectJs instance through code.
 */
 fancySelectJs.prototype.destroy = function() {
-	this.clearTimeout(this.searchTimer);
-	this.template.fancySelectJs = null;
-	this.dropdown.innerHTML = "";
-	this.select.innerHTML = "";
-	this.dropdown.parentNode.removeChild(this.dropdown);
-	this.select.parentNode.removeChild(this.select);
-	this.select = null;
-	this.selectText = null;
-	this.dropdown = null;
-	this.template = null;
-	this.parent = null;
-	this.options = null;
-	this.values = null;
-	this.selectedIndices = null;
+	try {
+		clearTimeout(this.searchTimer);
+		this.template.fancySelectJs = null;
+		this.dropdown.innerHTML = "";
+		this.select.innerHTML = "";
+		this.dropdown.parentNode.removeChild(this.dropdown);
+		this.select.parentNode.removeChild(this.select);
+		this.select = null;
+		this.selectText = null;
+		this.dropdown = null;
+		this.template.size = this.template.oldSize;
+		$(this.template).show();
+		this.template = null;
+		this.parent = null;
+		this.options = null;
+		this.values = null;
+		this.selectedIndices = null;
+	} catch(ex) {
+		console.log(ex);
+	}
 }
 
 /* Display update functions */

@@ -1,3 +1,25 @@
+//This is for SCSS or possibly SASS.  If your using just plain old CSS... stop it.  really. stop.
+
+//The main colour used for filled checkboxes and selected dropdown items
+$primaryColour:		#47ADE4;
+
+//The above colour when hovered over or tab-highlighted
+$primaryHover:		darken($primaryColour, 5%);
+
+//The background of the dropdown box
+$dropdownColour:		#FAFAFA;
+
+//The hover colour for all non-selected dropdown items
+$dropdownHover:		darken($dropdownColour, 5%);
+
+//The colour for the placeholder text and the disabled dropdown text
+$inactiveColour:	#888;
+
+//Pretty self-explanitory, but I'll give it a go.  It's like the stuff that surrounds the dropdown.
+$borderColour:		#CCC;
+
+
+
 @font-face {
     font-family: "fancySelectJs";
     src: url('../fonts/fancySelectJs.woff') format('woff'), url('../fonts/fancySelectJs.ttf') format('truetype'), url('../fonts/fancySelectJs.svg') format('svg');
@@ -13,13 +35,13 @@
     max-width: 100%;
     cursor: default;
     text-align: left;
-	border: 1px solid #CCC;
+	border: 1px solid $borderColour;
 	box-sizing: border-box;
 	//Disabled fancyselect
 	&[data-disabled] > .select {
-		color: #888;
+		color: $inactiveColour;
 		&:before {
-			color: #CCC;
+			color: $borderColour;
 		}
 	}
 	//The displayed fancy select text
@@ -48,10 +70,10 @@
 			right: 6px;
 			font-family: "fancySelectJs";
 			font-size: 0.6em;
-			color: #CCC;
+			color: $borderColour;
 		}
 		&[data-placeholder] {
-			color: #969696;
+			color: $inactiveColour;
 			text-indent: 2px;
 		}
 	}
@@ -66,8 +88,8 @@
     overflow-x: hidden;
     overflow-y: auto;
     margin-top: -1px;
-    background-color: #FAFAFA;
-    border: 1px solid #CCC;
+    background-color: $dropdownColour;
+    border: 1px solid $borderColour;
     z-index: 9001;
     text-align: left;
 	box-sizing: border-box;
@@ -76,7 +98,7 @@
 	}
 	//Each option within the dropdown
 	& > .option {
-		color: #000000;
+		color: #000;
 		padding: 10px;
 		line-height: 23px;
 		font-size: 14px;
@@ -92,18 +114,18 @@
 		box-sizing: border-box;
 		//Hovered
 		&[data-hover] {
-			background-color: #E4E4E4;
+			background-color: $dropdownHover;
 		}
 		//Non-check box
 		&:not(.check) {
 			//Selected
 			&[data-selected] {
-				background-color: #66B833;
+				background-color: $primaryColour;
 				border-color: #FFF;
 				color: #FFF;
 				//Selected and hovered
 				&[data-hover] {
-					background-color: #55A722;
+					background-color: $primaryHover;
 				}
 			}
 		}
@@ -122,13 +144,18 @@
 				font-size: 12px;
 				text-align: center;
 				background-color: #FFF;
-				border: 1px solid #CCC;
+				border: 1px solid $borderColour;
 				border-radius: 1px;
 				color: #FFF;
 			}
-			&[data-selected]:before {
-				background-color: #66B833;
-				border-color: #66B833;
+			&[data-selected] {
+				&:before {
+					background-color: $primaryColour;
+					border-color: $primaryColour;
+				}
+				&[data-hover]:before {
+					background-color: $primaryHover;
+				}
 			}
 		}
 	}

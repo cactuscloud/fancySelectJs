@@ -4,8 +4,11 @@
 			fancySelectJs Demo
 		</title>
 		<style>
+		body {
+			padding: 25px;
+		}
 			form {
-				padding: 50px;
+				padding: 25px 0;
 			}
 			form > div {
 				padding-bottom: 20px;
@@ -17,6 +20,9 @@
 			.fancySelectJs {
 				width: 200px;
 			}
+			.buttonArea {
+				margin-bottom: 50px;
+			}
 		
 		</style>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
@@ -26,14 +32,17 @@
 	<body>
 	
 		<h2>
-			fancySelectJs Demo
+			fancySelectJs Demo (scroll down for the controlls)
 		</h2>
 		<form>
 			<div>
-				<label id="l1" for="s1">
+				<h3>
+					fancySelectJs with no additional settings
+				</h3>
+				<label id="l0" for="s0">
 					Value = ""
 				</label>
-				<select id="s1" onchange="updateLabels()">
+				<select id="s0" onchange="updateLabels()">
 					<option value="cats">
 						Cats
 					</option>
@@ -50,10 +59,59 @@
 			</div>
 			
 			<div>
+				<h3>
+					fancySelectJs unset by default with placeholder text
+				</h3>
+				<label id="l1" for="s1">
+					Value = ""
+				</label>
+				<select id="s1" onchange="updateLabels()" data-placeholder="-- C'mon, select a thing --" data-value="">
+					<option value="cats">
+						Cats
+					</option>
+					<option value="dogs (better)">
+						Dogs
+					</option>
+					<option value="goats">
+						Goats
+					</option>
+					<option value="nuttin!">
+						Nothing
+					</option>
+				</select>
+			</div>
+			
+			<div>
+				<h3>
+					fancySelectJs as a basic multi-check with a placeholder
+				</h3>
 				<label id="l2" for="s2">
 					Value = ""
 				</label>
-				<select id="s2" onchange="updateLabels()" multiple>
+				<select id="s2" onchange="updateLabels()" data-placeholder="CHOOSE!!!" multiple>
+					<option value="cats">
+						Cats
+					</option>
+					<option value="dogs (better)">
+						Dogs
+					</option>
+					<option value="goats">
+						Goats
+					</option>
+					<option value="nuttin!">
+						Nothing
+					</option>
+				</select>
+			</div>
+			
+			<div>
+				<h3>
+					fancySelectJs as a multi-check with an 'all' option
+				</h3>
+				<label id="l3" for="s3">
+					Value = ""
+				</label>
+				<select id="s3" onchange="updateLabels()" multiple>
 					<option value="this should never appear" data-all="true">
 						All
 					</option>
@@ -73,32 +131,92 @@
 			</div>
 		
 		</form>
-		<div>
+		<div class="buttonArea">
 			Initialize fancySelectJs:
 			<div>
-				<button onclick="init()">
-					Initialize
-				</button>
+				<div id="preInitStuff">
+					<button onclick="init()">
+						Initialize fancySelectJs
+					</button>
+				</div>
+				<div id="postInitStuff" style="display: none">
+					<button id="enableButton" onclick="toggleEnabled(this)">
+						Disable fancySelects
+					</button>
+					<button onclick="dest()">
+						Destroy fancySelects
+					</button>
+				</div>
 			</div>
 		</div>
 		
 		
 		<script>
-			var f1, f2;
+			var enabled;
+			
+			var selects = [];
+			
+			var selectCount = 4;
 		
 			updateLabels();
 			
 			function updateLabels() {
-				document.getElementById("l1").innerHTML = "Value = \"" + $("#s1").val() + "\"";
-				document.getElementById("l2").innerHTML = "Value = \"" + $("#s2").val() + "\"";
+				//Okay - this is really lazy
+				for(var i = 0; i < selectCount; i++) {
+					//Demonstrates that the original select can still be used for data retrieval
+					document.getElementById("l" + i).innerHTML = "Value = \"" + $("#s" + i).val() + "\"";
+				}
 			}
 		
 			function init() {
-				f1 = new fancySelectJs();
-				f1.init(document.getElementById("s1"));
+				document.getElementById("preInitStuff").style.display = "none";
 				
-				f2 = new fancySelectJs();
-				f2.init(document.getElementById("s2"));
+				for(var i = 0; i < selectCount; i++) {
+					var t = new fancySelectJs();
+					//Initialize each fancySelectJs:
+					//	fancySelectJs.init( select_element )
+					//Here we are dynamically creating each SELECT element 'cause laziness
+					t.init(document.getElementById("s" + i));
+					//Add to an array (optional) to appreciate later :).  Note that is is not
+					//required as the fancySelectJs class can be accessed from the chosen select
+					//element after initilizaton, as follows:
+					//document.getElementById("my_select_element").fancySelectJs
+					selects.push(t);
+				}
+				//Set up the gui - just for this demo
+				disabled = true;
+				toggleEnabled(document.getElementById("enableButton"));
+				document.getElementById("postInitStuff").style.display = "block";
+			}
+			
+			//Enables or disables all of the fancySelects on this page
+			function toggleEnabled(el) {
+				enabled = !enabled;
+				if(enabled) {
+					el.innerHTML = "Disable fancySelects";
+					for(var i = 0; i < selectCount; i++) {
+						selects[i].enable();
+					}
+				} else {
+					el.innerHTML = "Enable fancySelects";
+					for(var i = 0; i < selectCount; i++) {
+						selects[i].disable();
+					}
+				}
+			}
+			
+			//Destroys the fancySelects.  You should only ever need this function in under very
+			//unusual conditions
+			function dest() {
+				document.getElementById("postInitStuff").style.display = "none";
+				for(var i = 0; i < selectCount; i++) {
+					//Removes all associated elements from the page and restores the original
+					//select elements
+					selects[i].destroy();
+				}
+				//Clear the array
+				selects = [];
+				document.getElementById("preInitStuff").style.display = "block";
 			}
 		
 		</script>
