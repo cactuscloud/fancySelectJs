@@ -1,0 +1,135 @@
+@font-face {
+    font-family: "fancySelectJs";
+    src: url('../fonts/fancySelectJs.woff') format('woff'), url('../fonts/fancySelectJs.ttf') format('truetype'), url('../fonts/fancySelectJs.svg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+//The main fancy-select div
+.fancySelectJs {
+	position: relative;
+	display: inline-block;
+    min-width: 50px;
+    max-width: 100%;
+    cursor: default;
+    text-align: left;
+	border: 1px solid #CCC;
+	box-sizing: border-box;
+	//Disabled fancyselect
+	&[data-disabled] > .select {
+		color: #888;
+		&:before {
+			color: #CCC;
+		}
+	}
+	//The displayed fancy select text
+	& > .select {
+		position: relative;
+		height: 100%;
+		max-width: 100%;
+		width: 100%;
+		z-index: 9;
+		padding-left: 7px;
+		padding-right: 22px;
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		outline: none !important;
+		box-sizing: border-box;
+		&:before {    
+			content: "\e600";
+			position: absolute;
+			top: 0;
+			right: 6px;
+			font-family: "fancySelectJs";
+			font-size: 0.6em;
+			color: #CCC;
+		}
+		&[data-placeholder] {
+			color: #969696;
+			text-indent: 2px;
+		}
+	}
+}
+
+//The bounding div of the dropdown box
+.fancySelectJs_dropdown {
+    display: none;
+    position: absolute;
+    height: auto;
+    max-height: 350px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-top: -1px;
+    background-color: #FAFAFA;
+    border: 1px solid #CCC;
+    z-index: 9001;
+    text-align: left;
+	box-sizing: border-box;
+	&[data-visible] {
+		display: block;   
+	}
+	//Each option within the dropdown
+	& > .option {
+		color: #000000;
+		padding: 10px;
+		line-height: 23px;
+		font-size: 14px;
+		position: relative;
+		width: 100%;   
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		cursor: pointer;
+		box-sizing: border-box;
+		//Hovered
+		&[data-hover] {
+			background-color: #E4E4E4;
+		}
+		//Non-check box
+		&:not(.check) {
+			//Selected
+			&[data-selected] {
+				background-color: #66B833;
+				border-color: #FFF;
+				color: #FFF;
+				//Selected and hovered
+				&[data-hover] {
+					background-color: #55A722;
+				}
+			}
+		}
+		//Check box select
+		&.check {
+			padding-left: 38px;   
+			&:before {
+				content: "\e601";
+				position: absolute;
+				top: calc(50% - 8.5px);
+				left: 10px;
+				width: 17px;
+				height: 17px;
+				line-height: 15px;	
+				font-family: "fancySelectJs";
+				font-size: 12px;
+				text-align: center;
+				background-color: #FFF;
+				border: 1px solid #CCC;
+				border-radius: 1px;
+				color: #FFF;
+			}
+			&[data-selected]:before {
+				background-color: #66B833;
+				border-color: #66B833;
+			}
+		}
+	}
+}
