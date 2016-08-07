@@ -6,9 +6,11 @@
 *				- Array
 *				- xxx,yyy,zzz
 *		- this.DELIMITER
+*			- Throw a warning/error if a value contains the delimiter
 *			- setValue
 *			- init()
 *			- getValue()?
+*					- Add getValueAsString using the custom delimiter
 *		- init()
 *			- Handle 'value'-less options
 */
