@@ -1,11 +1,39 @@
 /**
-*
-*
-*
-*
+*	To do:
+*		- setValue:
+*			- Accept more formats:
+*				- "[xxxx,yyyy,zzzz]"
+*				- Array
+*				- xxx,yyy,zzz
+*		- this.DELIMITER
+*			- setValue
+*			- init()
+*			- getValue()?
+*		- init()
+*			- Handle 'value'-less options
 */
 
-function fancySelectJs() {
+
+/** 
+*	fancySelectJs constructor.  Builds a new fancySelectJs instance from a given SELECT element.  A
+*	scroll parent element may be optionally supplied.  A scroll parent should only be supplied when
+*	the dropdown is placed on a modal or other "position: fixed" element.  Without this, the dropdown
+*	will be positioned relative to the document body and not the floating parent element.
+*
+*	Useful select attributes to set on the parent element:
+*		-	class					This class will be applied to the new select box
+*		-	data-placeholder		The placeholder
+*		-	multiple				Should this be a multiple
+*		-	data-value				The starting value of the select
+*		-	data-scroll-parent		The JS compatible element ID of the scrollparent
+*		-	disabled				This will pass through
+*		-	data-all-index			The index of the all component (this takes precedence over data-all) - credit goes to salesforce for fucking interfering with their html attributes again.  fuck!	
+*
+*	Useful option attributes:
+*		-	data-all				Sets this to an "All" option which silently selects everything
+*		
+*/
+function fancySelectJs(el) {
 	
 	//Constants
 	this.DELIMITER = ",";
@@ -54,30 +82,24 @@ function fancySelectJs() {
 	//Special functionality
 	this.allIndex = null;
 	this.allIndexSelected = false;
+	
+	//Initialize
+	if(typeof el != "undefined" && !!el) this.init(el);
 }
 
-/** 
-*	fancySelectJs constructor.  Builds a new fancySelectJs instance from a given SELECT element.  A
-*	scroll parent element may be optionally supplied.  A scroll parent should only be supplied when
-*	the dropdown is placed on a modal or other "position: fixed" element.  Without this, the dropdown
-*	will be positioned relative to the document body and not the floating parent element.
-*
-*	Useful select attributes to set on the parent element:
-*		-	class					This class will be applied to the new select box
-*		-	data-placeholder		The placeholder
-*		-	multiple				Should this be a multiple
-*		-	data-value				The starting value of the select
-*		-	data-scroll-parent		The JS compatible element ID of the scrollparent
-*		-	disabled				This will pass through
-*		-	data-all-index			The index of the all component (this takes precedence over data-all) - credit goes to salesforce for fucking interfering with their html attributes again.  fuck!	
-*
-*	Useful option attributes:
-*		-	data-all				Sets this to an "All" option which silently selects everything
-*		
-*/
+//El can be an ID or an element 
+//			- this needs testing
 fancySelectJs.prototype.init = function(el) {
 	if(el.fancySelectJs != null) return;
+	if(this.initialized) return;
 	this.template = el;
+	
+	//Error check
+	if(typeof el == "undefined" || !el) throw new TypeError('fancySelectJs requires a valid HTML SELECT element to initialize.');
+	//Check for id string
+	if(typeof el == "string") el = document.getElementById(el);
+	//Check for validity and tag
+	if(typeof el.tagName == "undefined" || !el.tagName) throw new TypeError('fancySelectJs requires a valid HTML SELECT element to initialize.');
 	
 	//Get placeholder values from the template element
 	this.placeholder = el.getAttribute("data-placeholder") || "";
@@ -498,7 +520,7 @@ fancySelectJs.prototype.reset = function() {
 fancySelectJs.prototype.setValue = function(value) {
 	this.selectedIndices = [];
 	this.values = [];
-	var o, newValues = value.split(this.DELIMITER);
+	var o, newValues = value.replace(/^\[|\]$/, "").split(this.DELIMITER);
 	for(var i = 0, j = this.options.length; i < j; i++) {
 		o = this.options[i];
 		if(newValues.includes(o.value)) {
