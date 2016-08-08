@@ -1,10 +1,5 @@
 /**
 *	To do:
-*		- setValue:
-*			- Accept more formats:
-*				- "[xxxx,yyyy,zzzz]"
-*				- Array
-*				- xxx,yyy,zzz
 *		- this.DELIMITER
 *			- Throw a warning/error if a value contains the delimiter
 *			- setValue
@@ -13,6 +8,16 @@
 *					- Add getValueAsString using the custom delimiter
 *		- init()
 *			- Handle 'value'-less options
+*		- Add prefix option:
+*			- e.g. Sort By: xxxx
+*/
+
+/* Changes:
+	- revised some text in the demo.html
+	= moved polyfills to beginning
+	- setvalue now accepts a string or an array
+	- updates demo to match new contruction style
+	- added static parseData
 */
 
 
@@ -88,6 +93,72 @@ function fancySelectJs(el) {
 	//Initialize
 	if(typeof el != "undefined" && !!el) this.init(el);
 }
+
+/* Misc. */
+/**
+*	Array.includes polyfill (Mozilla)
+*/
+if (!Array.prototype.includes) {
+	Array.prototype.includes = function(searchElement) {
+		if(this == null) {
+			throw new TypeError('Array.prototype.includes called on null or undefined');
+		}
+		var O = Object(this);
+		var len = parseInt(O.length, 10) || 0;
+		if(len === 0) return false;
+		var n = parseInt(arguments[1], 10) || 0;
+		var k;
+		if(n >= 0) k = n;
+		else {
+			k = len + n;
+			if(k < 0) k = 0;
+		}
+		var currentElement;
+		while(k < len) {
+			currentElement = O[k];
+			if (searchElement === currentElement || (searchElement !== searchElement && currentElement !== currentElement)) return true;
+			k++;
+		}
+		return false;
+	};
+}
+
+/* Polyfills */
+
+/**
+*	Array.indexOf polyfill (Mozilla)
+*/
+// Production steps of ECMA-262, Edition 5, 15.4.4.14
+// Reference: http://es5.github.io/#x15.4.4.14
+if (!Array.prototype.indexOf) {
+	Array.prototype.indexOf = function(searchElement, fromIndex) {
+		var k;
+		if(this == null) throw new TypeError('"this" is null or not defined');
+		var o = Object(this);
+		var len = o.length >>> 0;
+		if (len === 0) return -1;
+		var n = +fromIndex || 0;
+		if (Math.abs(n) === Infinity) n = 0;
+		if (n >= len) return -1;
+		k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+		while (k < len) {
+			if (k in o && o[k] === searchElement) return k;
+			k++;
+		}
+		return -1;
+	};
+}
+
+/**
+*	Array.isArray polyfill (mozilla)
+*/
+if (!Array.isArray) {
+	Array.isArray = function(arg) {
+		return Object.prototype.toString.call(arg) === '[object Array]';
+	};
+}
+
+/* Begin fancySelectJs functions */
 
 //El can be an ID or an element 
 //			- this needs testing
@@ -522,15 +593,35 @@ fancySelectJs.prototype.reset = function() {
 fancySelectJs.prototype.setValue = function(value) {
 	this.selectedIndices = [];
 	this.values = [];
-	var o, newValues = value.replace(/^\[|\]$/, "").split(this.DELIMITER);
+	var o, newValues = fancySelectJs.parseData(value, this.DELIMITER);
+	//Determine the value type
+	if(!Array.isArray(newValues)) throw new TypeError('fancySelectJs.setValue requires either a string or an array to function');
+	//Parse the values into the dropdown
 	for(var i = 0, j = this.options.length; i < j; i++) {
 		o = this.options[i];
-		if(newValues.includes(o.value)) {
+		if(newValues.includes(o.value.trim())) {
 			this.selectedIndices.push(i);
 			this.values.push(o);
 		}
 	}
 	this.updateValues();
+}
+
+/**
+*	Attempts to convert arbritary input data into an array of values that will be accepted by the
+*	JQuery $(select_element).val(data) function.
+*	Note that this is 'static' and called as follows: var i = fancySelectJs.parseData(data);
+*	Returns an array on success, a null on failure
+*/
+fancySelectJs.parseData = function(value, delimiter) {
+	if(typeof delimiter == "undefined" || !!delimiter) delimiter = ",";
+	if(typeof value == "string") {
+		var s1 = value.substr(0,1), s2 = value.substr(value.length - 1, 1);
+		if(s1 == '[' && s2 == ']') return value.replace(/^\[|\]$/, "").split(delimiter);
+		else if(s1 == '(' && s2 == ')') return value.replace(/^\(|\)$/, "").split(delimiter);
+		return value.split(delimiter);
+	} else if(Array.isArray(value)) return value;
+	return null;
 }
 
 /**
@@ -666,58 +757,4 @@ fancySelectJs.prototype.scrollOptionIntoView = function(index) {
     //Scroll window into view
     if($(option).offset().top < $(window).scrollTop()) option.scrollIntoView(true);
     else if($(option).offset().top + $(option).innerHeight() > $(window).scrollTop() + window.innerHeight) option.scrollIntoView(false);
-}
-
-
-/* Misc. */
-/**
-*	Array.includes polyfill (Mozilla)
-*/
-if (!Array.prototype.includes) {
-	Array.prototype.includes = function(searchElement) {
-		if(this == null) {
-			throw new TypeError('Array.prototype.includes called on null or undefined');
-		}
-		var O = Object(this);
-		var len = parseInt(O.length, 10) || 0;
-		if(len === 0) return false;
-		var n = parseInt(arguments[1], 10) || 0;
-		var k;
-		if(n >= 0) k = n;
-		else {
-			k = len + n;
-			if(k < 0) k = 0;
-		}
-		var currentElement;
-		while(k < len) {
-			currentElement = O[k];
-			if (searchElement === currentElement || (searchElement !== searchElement && currentElement !== currentElement)) return true;
-			k++;
-		}
-		return false;
-	};
-}
-
-/**
-*	Array.indexOf polyfill (Mozilla)
-*/
-// Production steps of ECMA-262, Edition 5, 15.4.4.14
-// Reference: http://es5.github.io/#x15.4.4.14
-if (!Array.prototype.indexOf) {
-	Array.prototype.indexOf = function(searchElement, fromIndex) {
-		var k;
-		if(this == null) throw new TypeError('"this" is null or not defined');
-		var o = Object(this);
-		var len = o.length >>> 0;
-		if (len === 0) return -1;
-		var n = +fromIndex || 0;
-		if (Math.abs(n) === Infinity) n = 0;
-		if (n >= len) return -1;
-		k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-		while (k < len) {
-			if (k in o && o[k] === searchElement) return k;
-			k++;
-		}
-		return -1;
-	};
 }

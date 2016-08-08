@@ -52,7 +52,7 @@
 					<option value="goats">
 						Goats
 					</option>
-					<option value="nuttin!">
+					<option value="Not a thing">
 						Nothing
 					</option>
 				</select>
@@ -75,7 +75,7 @@
 					<option value="goats">
 						Goats
 					</option>
-					<option value="nuttin!">
+					<option value="Nothing!!!">
 						Nothing
 					</option>
 				</select>
@@ -98,7 +98,7 @@
 					<option value="goats">
 						Goats
 					</option>
-					<option value="nuttin!">
+					<option value="Nope!">
 						Nothing
 					</option>
 				</select>
@@ -124,7 +124,7 @@
 					<option value="goats">
 						Goats
 					</option>
-					<option value="nuttin!">
+					<option value="Nopes!">
 						Nothing
 					</option>
 				</select>
@@ -172,17 +172,11 @@
 				document.getElementById("preInitStuff").style.display = "none";
 				
 				for(var i = 0; i < selectCount; i++) {
-					var t = new fancySelectJs();
-					//Initialize each fancySelectJs:
-					//	fancySelectJs.init( select_element )
-					//Here we are dynamically creating each SELECT element 'cause laziness
-					t.init(document.getElementById("s" + i));
-					//Add to an array (optional) to appreciate later :).  Note that is is not
-					//required as the fancySelectJs class can be accessed from the chosen select
-					//element after initilizaton, as follows:
-					//document.getElementById("my_select_element").fancySelectJs
-					selects.push(t);
-				}
+					//Initialize each fancySelectJs and add to an array (optional) to appreciate later :).
+					//Note that the fancySelectJs instance does not need to be stored anywhere for the
+					//class to function.
+					selects.push(new fancySelectJs(document.getElementById("s" + i)));					
+					};
 				//Set up the gui - just for this demo
 				disabled = true;
 				toggleEnabled(document.getElementById("enableButton"));
