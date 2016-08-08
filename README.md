@@ -179,8 +179,8 @@ Some instructions: (not too many)
 							
 			4.	Polyfills:
 			
-				Ading fancySelectJs to your page will also add polyfills for Array.includes(value) and
-				Array.indexOf(value) as per Mozilla's specifications.
+				Ading fancySelectJs to your page will also add polyfills for Array.includes(value),
+				Array.isArray(value), and Array.indexOf(value) as per Mozilla's specifications.
 					
 					
 Ugh, that's all.  As you were.

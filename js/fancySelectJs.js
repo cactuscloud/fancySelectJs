@@ -2,22 +2,19 @@
 *	To do:
 *		- this.DELIMITER
 *			- Throw a warning/error if a value contains the delimiter
-*			- setValue
 *			- init()
 *			- getValue()?
 *					- Add getValueAsString using the custom delimiter
 *		- init()
 *			- Handle 'value'-less options
+*		- Setting values (init and setValue):
+*			- If every value is selected except the "all" value - this should be handled
 *		- Add prefix option:
 *			- e.g. Sort By: xxxx
 */
 
 /* Changes:
-	- revised some text in the demo.html
-	= moved polyfills to beginning
-	- setvalue now accepts a string or an array
-	- updates demo to match new contruction style
-	- added static parseData
+
 */
 
 
@@ -593,6 +590,7 @@ fancySelectJs.prototype.reset = function() {
 fancySelectJs.prototype.setValue = function(value) {
 	this.selectedIndices = [];
 	this.values = [];
+	this.allIndexSelected = false;
 	var o, newValues = fancySelectJs.parseData(value, this.DELIMITER);
 	//Determine the value type
 	if(!Array.isArray(newValues)) throw new TypeError('fancySelectJs.setValue requires either a string or an array to function');
@@ -616,10 +614,15 @@ fancySelectJs.prototype.setValue = function(value) {
 fancySelectJs.parseData = function(value, delimiter) {
 	if(typeof delimiter == "undefined" || !!delimiter) delimiter = ",";
 	if(typeof value == "string") {
+		value = value.trim();
 		var s1 = value.substr(0,1), s2 = value.substr(value.length - 1, 1);
-		if(s1 == '[' && s2 == ']') return value.replace(/^\[|\]$/, "").split(delimiter);
-		else if(s1 == '(' && s2 == ')') return value.replace(/^\(|\)$/, "").split(delimiter);
-		return value.split(delimiter);
+		if((s1 == '[' && s2 == ']') || (s1 == '(' && s2 == ')')) var out = value.substr(1, value.length - 2).split(delimiter);
+        else out = value.split(delimiter);
+        //Trim each element
+        for(var i = 0, j = out.length; i < j; i++) {
+         	out[i] = out[i].trim();   
+        }
+        return out;
 	} else if(Array.isArray(value)) return value;
 	return null;
 }
