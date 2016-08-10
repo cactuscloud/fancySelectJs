@@ -14,7 +14,7 @@
 */
 
 /* Changes:
-
+	
 */
 
 
@@ -243,6 +243,7 @@ fancySelectJs.prototype.init = function(el) {
 *	Builds the GUI elements of the fancySelectJs.
 */
 fancySelectJs.prototype.buildGui = function(el) {
+	if(this.initialized) return;
 	var doc = document;
 	
 	//Create the dropdown bounding box
@@ -285,7 +286,7 @@ fancySelectJs.prototype.buildGui = function(el) {
 *	Assignes the event listeners required for the fancySelectJs to operate.
 */
 fancySelectJs.prototype.setEventListeners = function() {
-	
+	if(this.initialized) return;
 	//Window events
 	$(window).on("resize orientationchange", this.queuePositionDropdown.bind(this));
 	
@@ -315,25 +316,31 @@ fancySelectJs.prototype.setEventListeners = function() {
 */
 fancySelectJs.prototype.destroy = function() {
 	try {
-		clearTimeout(this.searchTimer);
 		this.template.fancySelectJs = null;
+	} catch(ex) {}
+	try {
+		this.initialized = false;
+		this.allIndexSelected = false;
+		clearTimeout(this.searchTimer);
 		this.dropdown.innerHTML = "";
 		this.select.innerHTML = "";
 		this.dropdown.parentNode.removeChild(this.dropdown);
 		this.select.parentNode.removeChild(this.select);
+	} catch(ex) {}
+	try {
+		this.template.size = this.template.oldSize;
+		$(this.template).show();
+	} catch(ex) {}
+	try {
 		this.select = null;
 		this.selectText = null;
 		this.dropdown = null;
-		this.template.size = this.template.oldSize;
-		$(this.template).show();
 		this.template = null;
 		this.parent = null;
 		this.options = null;
 		this.values = null;
 		this.selectedIndices = null;
-	} catch(ex) {
-		console.log(ex);
-	}
+	} catch(ex) {}
 }
 
 /* Display update functions */
@@ -413,6 +420,7 @@ fancySelectJs.prototype.updateValues = function() {
 *		-	No other indices will be affected
 */
 fancySelectJs.prototype.selectIndex = function(index) {
+	if(!this.initialized) return;
 	if(this.multiple) {
 		//Handle the dreaded "all" option
 		if(this.allIndexSelected && this.allIndex == index) return;
@@ -446,6 +454,7 @@ fancySelectJs.prototype.selectIndex = function(index) {
 *	selection of a given index in a multiselect context.
 */
 fancySelectJs.prototype.optionClick = function(ev) {
+	if(!this.initialized) return;
 	this.selectIndex($(ev.target).index());
 	if(!this.multiple) this.hideDropdown();
 }
@@ -454,6 +463,7 @@ fancySelectJs.prototype.optionClick = function(ev) {
 *	Handles selecting a hovered index in the dropdown on mouse over.
 */
 fancySelectJs.prototype.optionHover = function(ev) {
+	if(!this.initialized) return;
 	if(this.mouseX !== ev.clientX || this.mouseY !== ev.clientY) {
 		this.mouseX = ev.clientX;
 		this.mouseY = ev.clientY;
@@ -466,6 +476,7 @@ fancySelectJs.prototype.optionHover = function(ev) {
 *	Handles all key press events
 */
 fancySelectJs.prototype.keydown = function(ev) {
+	if(!this.initialized) return;
 	
 	if(this.disabled || this.options.length == 0) return;
 	var key = ev.keyCode;
@@ -544,6 +555,7 @@ fancySelectJs.prototype.keydown = function(ev) {
 }
 
 fancySelectJs.prototype.resetSearchString = function() {
+	if(!this.initialized) return;
 	clearTimeout(this.searchTimer);
 	this.searchString = "";
 }
@@ -552,6 +564,7 @@ fancySelectJs.prototype.resetSearchString = function() {
 *	Designed to handle the dropdown's deselect (blur) event
 */
 fancySelectJs.prototype.blur = function(ev) {
+	if(!this.initialized) return;
 	//Another Fix for Microsoft's broken browser
     if(document.activeElement === this.DOM_dropdown) {
         e.target.focus();  
@@ -565,6 +578,7 @@ fancySelectJs.prototype.blur = function(ev) {
 *	Stops the select box main area from losing focus on click of the dropdown.
 */
 fancySelectJs.prototype.dropdownMousedown = function(ev) {
+	if(!this.initialized) return;
 	ev.preventDefault();    
 }
 
@@ -572,6 +586,7 @@ fancySelectJs.prototype.dropdownMousedown = function(ev) {
 *	Handles the onclick events on the non-option areas of the dropdown.
 */
 fancySelectJs.prototype.selectClick = function(ev) {
+	if(!this.initialized) return;
 	if(!this.disabled && $(ev.target).hasClass("select")) this.toggleDropdown();
 }
 
@@ -579,6 +594,7 @@ fancySelectJs.prototype.selectClick = function(ev) {
 *	Clears the select box.
 */
 fancySelectJs.prototype.reset = function() {
+	if(!this.initialized) return;
 	this.selectedIndices = [];
 	this.values = [];
 	this.updateValues();
@@ -588,6 +604,7 @@ fancySelectJs.prototype.reset = function() {
 *	Sets the value of the search box
 */
 fancySelectJs.prototype.setValue = function(value) {
+	if(!this.initialized) return;
 	this.selectedIndices = [];
 	this.values = [];
 	this.allIndexSelected = false;
@@ -631,6 +648,7 @@ fancySelectJs.parseData = function(value, delimiter) {
 *	Gets the value of the search box
 */
 fancySelectJs.prototype.getValue = function() {
+	if(!this.initialized) return;
 	return $(this.template).val();
 }
 
@@ -639,23 +657,28 @@ fancySelectJs.prototype.getValue = function() {
 *	Disables a fancySelectJs, rendering it non-selectable and non-changeable by the user.
 */
 fancySelectJs.prototype.disable = function() {
+	if(!this.initialized) return;
 	this.disabled = true;
 	this.select.setAttribute("data-disabled", "true");
 	this.select.tabIndex = -1;
 	this.hideDropdown();
+	this.template.disabled = true;
 }
 
 /**
 *	Enables a fancySelectJs, rendering it selectable and changeable by the user.
 */
 fancySelectJs.prototype.enable = function() {
+	if(!this.initialized) return;
 	this.disabled = false;
 	this.select.removeAttribute("data-disabled");
 	this.select.tabIndex = 0;
+	this.template.disabled = false;
 }
 
 /* Gui control functions */
 fancySelectJs.prototype.highlightIndex = function(index) {
+	if(!this.initialized) return;
 	var o, c = this.dropdown.children;
 	for(var i = 0, j = c.length; i < j; i++) {
 		o = c[i];
@@ -670,6 +693,7 @@ fancySelectJs.prototype.highlightIndex = function(index) {
 *	Shows the dropdown box.
 */
 fancySelectJs.prototype.showDropdown = function() {
+	if(!this.initialized) return;
 	if(!this.dropdownVisible) {
 		this.queuePositionDropdown();
 		this.select.setAttribute("data-dropdown", "visible");
@@ -682,6 +706,7 @@ fancySelectJs.prototype.showDropdown = function() {
 *	Hides the dropdown box.
 */
 fancySelectJs.prototype.hideDropdown = function() {
+	if(!this.initialized) return;
 	if(this.dropdownVisible) {
 		this.select.removeAttribute("data-dropdown");
 		this.dropdown.removeAttribute("data-visible");
@@ -693,6 +718,7 @@ fancySelectJs.prototype.hideDropdown = function() {
 *	Toggles the dropdown box.
 */
 fancySelectJs.prototype.toggleDropdown = function() {
+	if(!this.initialized) return;
 	if(this.dropdownVisible) this.hideDropdown();
 	else this.showDropdown();
 }
@@ -702,6 +728,7 @@ fancySelectJs.prototype.toggleDropdown = function() {
 *	on the next animation frame.
 */
 fancySelectJs.prototype.queuePositionDropdown = function() {
+	if(!this.initialized) return;
 	var selectDom = this.select;
 	//If the main select is not visible
     if(selectDom.offsetParent === null) this.hideDropdown();
@@ -738,6 +765,7 @@ fancySelectJs.prototype.queuePositionDropdown = function() {
 *	variables in the class.
 */
 fancySelectJs.prototype.positionDropdown = function() {
+	if(!this.initialized) return;
     $(this.dropdown).css({top: this.dropdownTop, left: this.dropdownLeft});
     $(this.dropdown).outerWidth(this.dropdownWidth);
     this.frameRequested = false;
@@ -747,6 +775,7 @@ fancySelectJs.prototype.positionDropdown = function() {
 *	Scrolls the select option at a given index into view within the dropdown
 */
 fancySelectJs.prototype.scrollOptionIntoView = function(index) {
+	if(!this.initialized) return;
 	//Get the selected option
 	var dropdown = this.dropdown;
 	var option = dropdown.children[index];

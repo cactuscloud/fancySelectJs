@@ -140,15 +140,16 @@
 					</button>
 				</div>
 				<div id="postInitStuff" style="display: none">
-					<button id="enableButton" onclick="toggleEnabled(this)">
-						Disable fancySelects
-					</button>
 					<button onclick="dest()">
 						Destroy fancySelects
 					</button>
 				</div>
+				<button id="enableButton" onclick="toggleEnabled(this)">
+					Disable selects
+				</button>
 			</div>
 		</div>
+		
 		
 		
 		<script>
@@ -187,14 +188,26 @@
 			function toggleEnabled(el) {
 				enabled = !enabled;
 				if(enabled) {
-					el.innerHTML = "Disable fancySelects";
-					for(var i = 0; i < selectCount; i++) {
-						selects[i].enable();
+					el.innerHTML = "Disable selects";
+					if(selects.length > 0) {
+						for(var i = 0; i < selectCount; i++) {
+							selects[i].enable();
+						}
+					} else {
+						for(var i = 0; i < selectCount; i++) {
+							document.getElementById("s" + i).disabled = true;
+						}
 					}
 				} else {
-					el.innerHTML = "Enable fancySelects";
-					for(var i = 0; i < selectCount; i++) {
-						selects[i].disable();
+					el.innerHTML = "Enable selects";
+					if(selects.length > 0) {
+						for(var i = 0; i < selectCount; i++) {
+							selects[i].disable();
+						}
+					} else {
+						for(var i = 0; i < selectCount; i++) {
+							document.getElementById("s" + i).disabled = false;
+						}
 					}
 				}
 			}
