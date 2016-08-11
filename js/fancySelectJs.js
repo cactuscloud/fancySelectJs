@@ -14,7 +14,6 @@
 */
 
 /* Changes:
-	
 */
 
 
@@ -74,6 +73,7 @@ function fancySelectJs(el) {
 	this.mouseX;//The last recorded x coordinate of the mouse over a select option
 	this.searchString = "";//Any characters recently typed in
 	this.searchTimer;//Clears the searchString after a given amount of time
+	this.initializing = false;
 	this.initialized = false;
 	//MAY NOT BE NEEDED
 	this.hoverIndex = 0;//The index of the currently hovered element
@@ -86,6 +86,9 @@ function fancySelectJs(el) {
 	//Special functionality
 	this.allIndex = null;
 	this.allIndexSelected = false;
+	
+	//Should setValue() values have their surrounding quotes removed - e.g. ["value 1", "value 2"]
+	this.checkForQuoteEnclosedValues = true;
 	
 	//Initialize
 	if(typeof el != "undefined" && !!el) this.init(el);
@@ -162,6 +165,7 @@ if (!Array.isArray) {
 fancySelectJs.prototype.init = function(el) {
 	if(el.fancySelectJs != null) return;
 	if(this.initialized) return;
+	this.initializing = true;
 	this.template = el;
 	
 	//Error check
@@ -179,13 +183,11 @@ fancySelectJs.prototype.init = function(el) {
 	
 	//Get value
 	var selections = [];
-	if(el.hasAttribute("data-value")) {
-		if(this.multiple) selections = el.getAttribute("data-value").split(this.DELIMITER);
-		else selections.push(el.getAttribute("data-value"));
-	} else {
-		if(this.multiple) selections = ($(el).val() + "").split(",");
-		else selections.push($(el).val());
-	}
+	if(el.hasAttribute("data-value")) selections = fancySelectJs.parseData(el.getAttribute("data-value"));
+	else selections = fancySelectJs.parseData($(el).val());
+	
+	//Fix for older JQuery versions
+	if(selections == null) selections = [];
 	
 	//Get contents and selections
 	var options = el.children, o, v, n;
@@ -234,6 +236,7 @@ fancySelectJs.prototype.init = function(el) {
 	//Store this instance on the original select
 	el.fancySelectJs = this;
 	
+	this.initializing = false;
 	this.initialized = true;
 }
 
@@ -306,6 +309,9 @@ fancySelectJs.prototype.setEventListeners = function() {
 	//Option events
 	$(this.dropdown.children).on("click", this.optionClick.bind(this));
 	$(this.dropdown.children).on("mousemove", this.optionHover.bind(this));
+	
+	//Set value update on document ready - to fix occasional unset values bug
+	$(document).one("ready", this.updateValues.bind(this));
 }
 
 /* Destruction functions */
@@ -349,6 +355,7 @@ fancySelectJs.prototype.destroy = function() {
 *	function should be run upon initialization and after every update.
 */
 fancySelectJs.prototype.updateValues = function() {
+	if(!this.initializing && !this.initialized) return;
 	//Handle the "all" option of doom
 	//	- 	If the "all option is selected", or
 	//	-	if the all option exists and nothing is selected, or
@@ -604,10 +611,11 @@ fancySelectJs.prototype.reset = function() {
 *	Sets the value of the search box
 */
 fancySelectJs.prototype.setValue = function(value) {
-	if(!this.initialized) return;
+	if(!this.initialized && !this.initializing) return;
 	this.selectedIndices = [];
 	this.values = [];
 	this.allIndexSelected = false;
+	if((typeof value != "string" && typeof value != "object") || value == null || value == "") return;
 	var o, newValues = fancySelectJs.parseData(value, this.DELIMITER);
 	//Determine the value type
 	if(!Array.isArray(newValues)) throw new TypeError('fancySelectJs.setValue requires either a string or an array to function');
@@ -619,7 +627,7 @@ fancySelectJs.prototype.setValue = function(value) {
 			this.values.push(o);
 		}
 	}
-	this.updateValues();
+	if(this.initialized) this.updateValues();
 }
 
 /**
