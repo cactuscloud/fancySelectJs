@@ -52,7 +52,7 @@
 					<option value="goats">
 						Goats
 					</option>
-					<option value="nuttin!">
+					<option value="Not a thing">
 						Nothing
 					</option>
 				</select>
@@ -60,7 +60,7 @@
 			
 			<div>
 				<h3>
-					fancySelectJs unset by default with placeholder text
+					fancySelectJs unset by default with placeholder text (no value in the first initialize)
 				</h3>
 				<label id="l1" for="s1">
 					Value = ""
@@ -75,7 +75,7 @@
 					<option value="goats">
 						Goats
 					</option>
-					<option value="nuttin!">
+					<option value="Nothing!!!">
 						Nothing
 					</option>
 				</select>
@@ -98,7 +98,7 @@
 					<option value="goats">
 						Goats
 					</option>
-					<option value="nuttin!">
+					<option value="Nope!">
 						Nothing
 					</option>
 				</select>
@@ -124,7 +124,7 @@
 					<option value="goats">
 						Goats
 					</option>
-					<option value="nuttin!">
+					<option value="Nopes!">
 						Nothing
 					</option>
 				</select>
@@ -140,15 +140,16 @@
 					</button>
 				</div>
 				<div id="postInitStuff" style="display: none">
-					<button id="enableButton" onclick="toggleEnabled(this)">
-						Disable fancySelects
-					</button>
 					<button onclick="dest()">
 						Destroy fancySelects
 					</button>
 				</div>
+				<button id="enableButton" onclick="toggleEnabled(this)">
+					Disable selects
+				</button>
 			</div>
 		</div>
+		
 		
 		
 		<script>
@@ -172,17 +173,11 @@
 				document.getElementById("preInitStuff").style.display = "none";
 				
 				for(var i = 0; i < selectCount; i++) {
-					var t = new fancySelectJs();
-					//Initialize each fancySelectJs:
-					//	fancySelectJs.init( select_element )
-					//Here we are dynamically creating each SELECT element 'cause laziness
-					t.init(document.getElementById("s" + i));
-					//Add to an array (optional) to appreciate later :).  Note that is is not
-					//required as the fancySelectJs class can be accessed from the chosen select
-					//element after initilizaton, as follows:
-					//document.getElementById("my_select_element").fancySelectJs
-					selects.push(t);
-				}
+					//Initialize each fancySelectJs and add to an array (optional) to appreciate later :).
+					//Note that the fancySelectJs instance does not need to be stored anywhere for the
+					//class to function.
+					selects.push(new fancySelectJs(document.getElementById("s" + i)));					
+					};
 				//Set up the gui - just for this demo
 				disabled = true;
 				toggleEnabled(document.getElementById("enableButton"));
@@ -193,14 +188,26 @@
 			function toggleEnabled(el) {
 				enabled = !enabled;
 				if(enabled) {
-					el.innerHTML = "Disable fancySelects";
-					for(var i = 0; i < selectCount; i++) {
-						selects[i].enable();
+					el.innerHTML = "Disable selects";
+					if(selects.length > 0) {
+						for(var i = 0; i < selectCount; i++) {
+							selects[i].enable();
+						}
+					} else {
+						for(var i = 0; i < selectCount; i++) {
+							document.getElementById("s" + i).disabled = true;
+						}
 					}
 				} else {
-					el.innerHTML = "Enable fancySelects";
-					for(var i = 0; i < selectCount; i++) {
-						selects[i].disable();
+					el.innerHTML = "Enable selects";
+					if(selects.length > 0) {
+						for(var i = 0; i < selectCount; i++) {
+							selects[i].disable();
+						}
+					} else {
+						for(var i = 0; i < selectCount; i++) {
+							document.getElementById("s" + i).disabled = false;
+						}
 					}
 				}
 			}

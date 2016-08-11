@@ -18,7 +18,7 @@ Some instructions: (not too many)
 		2.  Ditto, but for the css/multiSelect.css an JQuery
 		3.  Add some styling (mainly width)
 		4.  Create a HTML text box
-		5.  With JavaScript, create and initialize a new multiselect
+		5.  With JavaScript, create a new multiselect
 
 	Quick example:
 	<html>
@@ -46,8 +46,7 @@ Some instructions: (not too many)
 			<!-- end step 4 -->
 			<script>
 				/* begin step 5 */
-				var fancyselect = new fancySelectJs();
-				fancyselect.init(document.getElementById("mySelectId"));
+				var fancyselect = new fancySelectJs(document.getElementById("mySelectId"));
 				/* end step 5 */			
 			</script>
 		</body>
@@ -111,6 +110,10 @@ Some instructions: (not too many)
 					This defines the delimiter character that the fancySelectJs will use.  This is set to
 					a comma by default.  The current version of fancySelectJs has not accounted for this
 					being changed.
+					
+				init()
+					Initializes an uninitialized fancySelectJs instance.  This should not be required in
+					common use.
 				
 				destroy()
 					Destroys a fancySelectJs instance and removes all related elements from the DOM.  Also
@@ -138,6 +141,16 @@ Some instructions: (not too many)
 				enable()
 					Enables the fancySelectJs.
 					
+				fancySelectJs.parseData(String data, [String delimiter])
+					This "static" function will attempt to parse a string or array input into an array
+					that can be used to set the value of a HTML SELECT element with JQuery's
+					$(elem).val(new_value) function.
+					
+					The function will attempt to parse the supplied data using the supplied delimiter if
+					that data is a String.  If no delimiter is supplied, a comma will be used by default.
+					
+					This function will return an array on success, and a null value on failure.
+					
 			3.	Accessing the fancySelectJs class after initialization:
 
 				There are two ways in which you can access a specific fancySelectJs instance after it
@@ -146,8 +159,7 @@ Some instructions: (not too many)
 					a)	Store the fancySelectJs object as a variable:
 						e.g.
 							var someSelectElement = document.getElementById("mySelectId");
-							var storedFancySelect = new fancySelectJs();
-							storedFancySelect.init(someSelectElement);
+							var storedFancySelect = new fancySelectJs(someSelectElement);
 							//Oh yeah! I can use this variable later on
 							storedFancySelect.setValue("ducks!");
 							
@@ -155,8 +167,7 @@ Some instructions: (not too many)
 						e.g.
 							var someSelectElement = document.getElementById("mySelectId");
 							(function() {
-								var storedFancySelect = new fancySelectJs();
-								storedFancySelect.init(someSelectElement);
+								var storedFancySelect = new fancySelectJs(someSelectElement);
 							})();
 							
 							function changeThatValue() {
@@ -169,8 +180,8 @@ Some instructions: (not too many)
 							
 			4.	Polyfills:
 			
-				Ading fancySelectJs to your page will also add polyfills for Array.includes(value) and
-				Array.indexOf(value) as per Mozilla's specifications.
+				Ading fancySelectJs to your page will also add polyfills for Array.includes(value),
+				Array.isArray(value), and Array.indexOf(value) as per Mozilla's specifications.
 					
 					
 Ugh, that's all.  As you were.
