@@ -58,6 +58,9 @@ Some instructions: (not too many)
 			
 				Useful SELECT attributes to set on the parent element:
 					Attribute			Effect
+					
+					data-id				This sets the id attribute on the fancySelectJs
+					
 					class				This class will be applied to the new SELECT box
 					
 					data-placeholder	The placeholder text to use when nothing is selected
