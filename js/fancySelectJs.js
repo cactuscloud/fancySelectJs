@@ -14,6 +14,8 @@
 */
 
 /* Changes:
+- Added traditional JavaScript style onchange function to the fancySelectJs element itself
+- Fixed issue where onchange events were firing during initialization
 */
 
 
@@ -31,6 +33,7 @@
 *		-	data-scroll-parent		The JS compatible element ID of the scrollparent
 *		-	disabled				This will pass through
 *		-	data-all-index			The index of the all component (this takes precedence over data-all) - credit goes to salesforce for fucking interfering with their html attributes again.  fuck!	
+*		-	data-id					The ID attribute for the new fancySelectJs
 *
 *	Useful option attributes:
 *		-	data-all				Sets this to an "All" option which silently selects everything
@@ -86,12 +89,13 @@ function fancySelectJs(el) {
 	//Special functionality
 	this.allIndex = null;
 	this.allIndexSelected = false;
-	
-	//Should setValue() values have their surrounding quotes removed - e.g. ["value 1", "value 2"]
-	this.checkForQuoteEnclosedValues = true;
-	
+		
 	//Initialize
 	if(typeof el != "undefined" && !!el) this.init(el);
+	
+	
+	//Events
+	this.onchange = null;
 }
 
 /* Misc. */
@@ -256,6 +260,7 @@ fancySelectJs.prototype.buildGui = function(el) {
     selectBox.style.display = $(el).css("display");
     selectBox.style.opacity = $(el).css("opacity");
     selectBox.setAttribute("role","listbox");
+	if(this.template.hasAttribute("data-id")) selectBox.id = this.template.getAttribute("data-id");
 
 	//Create the inner portion of the dropdown
 	var inner = doc.createElement("div");
@@ -311,7 +316,7 @@ fancySelectJs.prototype.setEventListeners = function() {
 	$(this.dropdown.children).on("mousemove", this.optionHover.bind(this));
 	
 	//Set value update on document ready - to fix occasional unset values bug
-	$(document).one("ready", this.updateValues.bind(this));
+	$(document).one("ready", {fireChangeEvent : false}, this.updateValues.bind(this));
 }
 
 /* Destruction functions */
@@ -326,6 +331,7 @@ fancySelectJs.prototype.destroy = function() {
 	} catch(ex) {}
 	try {
 		this.initialized = false;
+		this.initializing = false;
 		this.allIndexSelected = false;
 		clearTimeout(this.searchTimer);
 		this.dropdown.innerHTML = "";
@@ -338,6 +344,7 @@ fancySelectJs.prototype.destroy = function() {
 		$(this.template).show();
 	} catch(ex) {}
 	try {
+		this.onchange = null;
 		this.select = null;
 		this.selectText = null;
 		this.dropdown = null;
@@ -354,7 +361,7 @@ fancySelectJs.prototype.destroy = function() {
 *	Updates the element to match the values stored in this.values and this.selectedIndices. This
 *	function should be run upon initialization and after every update.
 */
-fancySelectJs.prototype.updateValues = function() {
+fancySelectJs.prototype.updateValues = function(ev) {
 	if(!this.initializing && !this.initialized) return;
 	//Handle the "all" option of doom
 	//	- 	If the "all option is selected", or
@@ -403,15 +410,16 @@ fancySelectJs.prototype.updateValues = function() {
 			}
 		}
 	}
+	
 	//Update the template select
-	if(this.initialized || this.allIndexSelected) {//Don't update the select during initialization
-		//Create a value the select element will accept
-		var t = [];
-		for(var i = 0, j = this.values.length; i < j; i++) {
-			t.push(this.values[i].value);
-		}
-		$(this.template).val(t);
+	var t = [];
+	for(var i = 0, j = this.values.length; i < j; i++) {
+		t.push(this.values[i].value);
+	}
+	$(this.template).val(t);
+	if(this.initialized === true && (typeof ev == "undefined" || !ev.data || ev.data.fireChangeEvent !== false)) {
 		$(this.template).trigger("onchange");
+		if(typeof this.onchange == "function") this.onchange();
 	}
 }
 
