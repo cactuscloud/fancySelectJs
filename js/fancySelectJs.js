@@ -13,12 +13,6 @@
 *			- e.g. Sort By: xxxx
 */
 
-/* Changes:
-- Added traditional JavaScript style onchange function to the fancySelectJs element itself
-- Fixed issue where onchange events were firing during initialization
-*/
-
-
 /** 
 *	fancySelectJs constructor.  Builds a new fancySelectJs instance from a given SELECT element.  A
 *	scroll parent element may be optionally supplied.  A scroll parent should only be supplied when
@@ -34,6 +28,7 @@
 *		-	disabled				This will pass through
 *		-	data-all-index			The index of the all component (this takes precedence over data-all) - credit goes to salesforce for fucking interfering with their html attributes again.  fuck!	
 *		-	data-id					The ID attribute for the new fancySelectJs
+*		-	data-prefix				Any prefix text to appear in the select box - e.g. Sort By: YOUR_SELECTION
 *
 *	Useful option attributes:
 *		-	data-all				Sets this to an "All" option which silently selects everything
@@ -85,6 +80,7 @@ function fancySelectJs(el) {
 	this.placeholder = "";
 	this.multiplePlaceholder = "Multiple Values";
 	this.allPlaceholder = "All";
+	this.prefixText = null;
 	
 	//Special functionality
 	this.allIndex = null;
@@ -181,6 +177,7 @@ fancySelectJs.prototype.init = function(el) {
 	
 	//Get placeholder values from the template element
 	this.placeholder = el.getAttribute("data-placeholder") || "";
+	this.prefixText = el.getAttribute("data-prefix") || null;
 	this.multiple = el.multiple;
 	el.oldSize = el.size;
 	el.size = 1;//Normalize the height of the initial select
@@ -394,9 +391,10 @@ fancySelectJs.prototype.updateValues = function(ev) {
 		this.selectText.innerHTML = this.placeholder;
 		this.selectText.setAttribute("data-placeholder", "true");
 	} else {
+		var prefix = (!!this.prefixText ? "<span class=\"prefix\">" + this.prefixText + "</span>&nbsp;" : "");
 		this.selectText.removeAttribute("data-placeholder");
-		if(selectionCount == 1) this.selectText.innerHTML = this.values[0].label;
-		else if(selectionCount == options.length) this.selectText.innerHTML = this.allPlaceholder;
+		if(selectionCount == 1) this.selectText.innerHTML = prefix + this.values[0].label;
+		else if(selectionCount == options.length) this.selectText.innerHTML = prefix + this.allPlaceholder;
 		else this.selectText.innerHTML = this.multiplePlaceholder;
 	}
 	//Update the actual value to match that required by the "all" option most foul

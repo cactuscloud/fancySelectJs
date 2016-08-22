@@ -60,12 +60,35 @@
 			
 			<div>
 				<h3>
-					fancySelectJs unset by default with placeholder text (no value in the first initialize)
+					fancySelectJs with prefix text
 				</h3>
 				<label id="l1" for="s1">
 					Value = ""
 				</label>
-				<select id="s1" onchange="updateLabels()" data-placeholder="-- C'mon, select a thing --" data-value="">
+				<select id="s1" onchange="updateLabels()" data-prefix="Sort By:">
+					<option value="Relevance">
+						Relevance
+					</option>
+					<option value="Newest">
+						Newest
+					</option>
+					<option value="Oldest">
+						Oldest
+					</option>
+					<option value="Closest">
+						Closest
+					</option>
+				</select>
+			</div>
+			
+			<div>
+				<h3>
+					fancySelectJs unset by default with placeholder text (no value in the first initialize)
+				</h3>
+				<label id="l2" for="s2">
+					Value = ""
+				</label>
+				<select id="s2" onchange="updateLabels()" data-placeholder="-- C'mon, select a thing --" data-value="">
 					<option value="cats">
 						Cats
 					</option>
@@ -85,10 +108,10 @@
 				<h3>
 					fancySelectJs as a basic multi-check with a placeholder
 				</h3>
-				<label id="l2" for="s2">
+				<label id="l3" for="s3">
 					Value = ""
 				</label>
-				<select id="s2" onchange="updateLabels()" data-placeholder="CHOOSE!!!" multiple>
+				<select id="s3" onchange="updateLabels()" data-placeholder="CHOOSE!!!" multiple>
 					<option value="cats">
 						Cats
 					</option>
@@ -108,10 +131,10 @@
 				<h3>
 					fancySelectJs as a multi-check with an 'all' option
 				</h3>
-				<label id="l3" for="s3">
+				<label id="l4" for="s4">
 					Value = ""
 				</label>
-				<select id="s3" onchange="updateLabels()" multiple>
+				<select id="s4" onchange="updateLabels()" multiple>
 					<option value="this should never appear" data-all="true">
 						All
 					</option>
@@ -157,7 +180,7 @@
 			
 			var selects = [];
 			
-			var selectCount = 4;
+			var selectCount = 5;
 		
 			updateLabels();
 			
