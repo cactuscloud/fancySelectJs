@@ -391,10 +391,10 @@ fancySelectJs.prototype.updateValues = function(ev) {
 		this.selectText.innerHTML = this.placeholder;
 		this.selectText.setAttribute("data-placeholder", "true");
 	} else {
-		var prefix = (this.prefixText ? "<span class=\"prefix\">" + this.prefixText + "</span>&nbsp;" : "");
+		var prefix = (!!this.prefixText ? "<span class=\"prefix\">" + this.prefixText + "</span>&nbsp;" : "");
 		this.selectText.removeAttribute("data-placeholder");
 		if(selectionCount == 1) this.selectText.innerHTML = prefix + this.values[0].label;
-		else if(selectionCount == options.length) prefix + this.selectText.innerHTML = this.allPlaceholder;
+		else if(selectionCount == options.length) this.selectText.innerHTML = prefix + this.allPlaceholder;
 		else this.selectText.innerHTML = this.multiplePlaceholder;
 	}
 	//Update the actual value to match that required by the "all" option most foul

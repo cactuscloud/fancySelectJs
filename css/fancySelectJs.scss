@@ -18,6 +18,8 @@ $inactiveColour:	#888;
 //Pretty self-explanitory, but I'll give it a go.  It's like the stuff that surrounds the dropdown.
 $borderColour:		#CCC;
 
+//The colour for the prefix text (if any)
+$prefixColour:		#888;
 
 
 @font-face {
@@ -42,6 +44,9 @@ $borderColour:		#CCC;
 		color: $inactiveColour;
 		&:before {
 			color: $borderColour;
+		}
+		.prefix {
+			color: $inactiveColour;
 		}
 	}
 	//The displayed fancy select text
@@ -75,6 +80,9 @@ $borderColour:		#CCC;
 		&[data-placeholder] {
 			color: $inactiveColour;
 			text-indent: 2px;
+		}
+		.prefix {
+			color: $prefixColour;
 		}
 	}
 }
