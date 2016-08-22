@@ -9,8 +9,6 @@
 *			- Handle 'value'-less options
 *		- Setting values (init and setValue):
 *			- If every value is selected except the "all" value - this should be handled
-*		- Add prefix option:
-*			- e.g. Sort By: xxxx
 */
 
 /** 
@@ -166,7 +164,6 @@ fancySelectJs.prototype.init = function(el) {
 	if(el.fancySelectJs != null) return;
 	if(this.initialized) return;
 	this.initializing = true;
-	this.template = el;
 	
 	//Error check
 	if(typeof el == "undefined" || !el) throw new TypeError('fancySelectJs requires a valid HTML SELECT element to initialize.');
@@ -174,6 +171,8 @@ fancySelectJs.prototype.init = function(el) {
 	if(typeof el == "string") el = document.getElementById(el);
 	//Check for validity and tag
 	if(typeof el.tagName == "undefined" || !el.tagName) throw new TypeError('fancySelectJs requires a valid HTML SELECT element to initialize.');
+	
+	this.template = el;
 	
 	//Get placeholder values from the template element
 	this.placeholder = el.getAttribute("data-placeholder") || "";
@@ -257,7 +256,7 @@ fancySelectJs.prototype.buildGui = function(el) {
     selectBox.style.display = $(el).css("display");
     selectBox.style.opacity = $(el).css("opacity");
     selectBox.setAttribute("role","listbox");
-	if(this.template.hasAttribute("data-id")) selectBox.id = this.template.getAttribute("data-id");
+	if(el.hasAttribute("data-id")) selectBox.id = el.getAttribute("data-id");
 
 	//Create the inner portion of the dropdown
 	var inner = doc.createElement("div");
@@ -416,9 +415,20 @@ fancySelectJs.prototype.updateValues = function(ev) {
 	}
 	$(this.template).val(t);
 	if(this.initialized === true && (typeof ev == "undefined" || !ev.data || ev.data.fireChangeEvent !== false)) {
-		$(this.template).trigger("onchange");
+		this.fireEvent("change");
 		if(typeof this.onchange == "function") this.onchange();
 	}
+}
+
+/**
+*	Fires an event on the template select using vanilla JS (for SF compatibility).  The 
+*	parameter should be the event name without any "on" prefix.  For example, for an onchange event,
+*	we would call this.fireEvent("change");
+*/
+fancySelectJs.prototype.fireEvent = function(eventName) {
+	var e = document.createEvent("HTMLEvents");
+	e.initEvent(eventName, true, true);
+	this.template.dispatchEvent(e);
 }
 
 /**
