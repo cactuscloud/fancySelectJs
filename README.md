@@ -96,6 +96,10 @@ Some instructions: (not too many)
 										The index should be a number equal to 0 or greater, but less than
 										number of OPTION elements contained within the SELECT.
 				
+					data-prefix			Enter any text that should appear before the selection in the closed
+										fancySelectJs box here.  For example, where data-prefix="Sort By:", the
+										fancySelectJs will show "Sort By: SELECTED_VALUE".
+										
 				Useful OPTION attributes to set on one OPTION element:
 					data-all			Sets this to an "All" option which silently selects everything
 										as per the data-all-index attribute above.  Note that this can
