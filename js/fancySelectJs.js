@@ -161,9 +161,9 @@ if (!Array.isArray) {
 //El can be an ID or an element 
 //			- this needs testing
 fancySelectJs.prototype.init = function(el) {
-	if(el.fancySelectJs != null) return;
+	//Check whether already initialized/initializing
 	if(this.initialized) return;
-	this.initializing = true;
+	this.initializing = true;	
 	
 	//Error check
 	if(typeof el == "undefined" || !el) throw new TypeError('fancySelectJs requires a valid HTML SELECT element to initialize.');
@@ -171,6 +171,8 @@ fancySelectJs.prototype.init = function(el) {
 	if(typeof el == "string") el = document.getElementById(el);
 	//Check for validity and tag
 	if(typeof el.tagName == "undefined" || !el.tagName) throw new TypeError('fancySelectJs requires a valid HTML SELECT element to initialize.');
+	//Check whether a fancySelectJs already exists for this element
+	if(el.fancySelectJs != null) throw new Error("A fancySelectJs already exists for this element");
 	
 	this.template = el;
 	
