@@ -65,6 +65,12 @@ Some instructions: (not too many)
 					
 					data-placeholder	The placeholder text to use when nothing is selected
 					
+					data-all-text		The text to show in a multiselect fancySelectJs element when all
+										options have been selected
+					
+					data-multiple-text	The text to show in a multiselect fancySelectJs element when
+										multiple, but not all, options have been selected
+					
 					multiple			Should this be a multiselect box
 					
 					data-value			By default, multiselect will inherit its value from the HTML

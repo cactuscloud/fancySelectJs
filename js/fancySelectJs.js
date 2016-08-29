@@ -20,6 +20,8 @@
 *	Useful select attributes to set on the parent element:
 *		-	class					This class will be applied to the new select box
 *		-	data-placeholder		The placeholder
+*		-	data-all-text			The text to display when every option in a multiselect is selected		
+*		-	data-multiple-text		The text to display when mutliple - but not all- options are selected		
 *		-	multiple				Should this be a multiple
 *		-	data-value				The starting value of the select
 *		-	data-scroll-parent		The JS compatible element ID of the scrollparent
@@ -158,8 +160,10 @@ if (!Array.isArray) {
 
 /* Begin fancySelectJs functions */
 
-//El can be an ID or an element 
-//			- this needs testing
+/**
+*	Initializes this fancySelectJs instance.
+*	@param	Either the ID of, or a reference to a valid HTML SELECT element
+*/
 fancySelectJs.prototype.init = function(el) {
 	//Check whether already initialized/initializing
 	if(this.initialized) return;
@@ -178,6 +182,8 @@ fancySelectJs.prototype.init = function(el) {
 	
 	//Get placeholder values from the template element
 	this.placeholder = el.getAttribute("data-placeholder") || "";
+	if(el.hasAttribute("data-multiple-text")) this.multiplePlaceholder = el.getAttribute("data-multiple-text");
+	if(el.hasAttribute("data-all-text")) this.allPlaceholder = el.getAttribute("data-all-text");
 	this.prefixText = el.getAttribute("data-prefix") || null;
 	this.multiple = el.multiple;
 	el.oldSize = el.size;
