@@ -283,8 +283,8 @@ fancySelectJs.prototype.buildGui = function(el) {
 	//Fill the dropdown
 	var options = el.children, dropdownInner = "";
 	for(var i = 0, j = options.length; i < j; i++) {
-		if(this.multiple) dropdownInner += "<div role=\"option\" class=\"option check\" aria-checked=\"false\">" + options[i].innerHTML;
-		else dropdownInner += "<div role=\"option\" class=\"option\" aria-selected=\"false\">" + options[i].innerHTML;
+		if(this.multiple) dropdownInner += "<div role=\"option\" class=\"option check\" aria-checked=\"false\">" + options[i].innerHTML + "</div>";
+		else dropdownInner += "<div role=\"option\" class=\"option\" aria-selected=\"false\">" + options[i].innerHTML + "</div>";
 	}
 	
 	dropdown.innerHTML = dropdownInner;
