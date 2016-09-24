@@ -63,6 +63,9 @@ Some instructions: (not too many)
 					
 					class				This class will be applied to the new SELECT box
 					
+					data-dropdown-class	This class will be applied to the dropdown part of the
+										fancySelectJs
+					
 					data-placeholder	The placeholder text to use when nothing is selected
 					
 					data-all-text		The text to show in a multiselect fancySelectJs element when all
@@ -139,14 +142,28 @@ Some instructions: (not too many)
 					Clears a fancySelectJs.  This function automatically runs when the fancySelectJs's
 					parent form (if any) fires its onreset event.
 					
-				setValue(String value)
-					Clears the fancy select and sets it to a given value or to a DELIMITER separated list of
-					values.
+				setValue(Multiple value)
+					Clears the fancy select and sets it to the given value or values specified in the 
+					parameter.  Possible values are:
+						- A DELIMITER separated list of Strings
+						- An Array of Strings
+						- An Array of objects with a String value parameter - e.g. [{value: ""}, ...]
+					This function does not fire the change event.
 		
 				getValue() : String
-					Return a string containing the value of the fancySelectJs.  The same could be
+					Returns a string containing the value of the fancySelectJs.  The same could be
 					achieved by selecting the original HTML SELECT element with JQuery and running the
 					JQuery val() function - i.e. var value = $("#someHtmlSelect").val();
+					
+				getValueAsArray() : Array
+					Returns an array of objects representing the label and value of the current selections.
+					Data of this format can also be accepted by the setValue() function.  The data format is
+					as follows - [{value: "", label: ""}, ...]
+					
+				getOption(Integer index) : Object
+					Returns the data held for an option at a specific index within the fancySelectJs.  This
+					data is compatible with the setValue() function.  The data format is as follows - 
+					[{value: "", label: ""}, ...]
 					
 				disable()
 					Disables the fancySelectJs.

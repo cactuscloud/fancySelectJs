@@ -4,9 +4,9 @@
 			fancySelectJs Demo
 		</title>
 		<style>
-		body {
-			padding: 25px;
-		}
+			body {
+				padding: 25px;
+			}
 			form {
 				padding: 25px 0;
 			}
@@ -136,8 +136,7 @@
 				</label>
 				<select id="s4" onchange="updateLabels()" multiple>
 					<option value="this should never appear" data-all="true">
-						All
-					</option>
+						All					</option>
 					<option value="cats">
 						Cats
 					</option>
@@ -152,7 +151,47 @@
 					</option>
 				</select>
 			</div>
-		
+			
+			<div>
+				<h3>
+					Custom select acion on a fancySelectJs
+				</h3>
+				<label id="l5" for="s5">
+					Value = ""
+				</label>
+				<select id="s5" onchange="updateSelect(this); updateLabels()" multiple>
+					<option value="cats">
+						Cats
+					</option>
+					<option value="dogs">
+						Dogs
+					</option>
+					<option value="goats">
+						Goats
+					</option>
+					<option value="cats+dogs">
+						Cats and Dogs
+					</option>
+				</select>
+				<script>
+					function updateSelect(el) {
+						var fs = el.fancySelectJs;
+						var vals = fs.getValueAsArray();
+						for(var i = 0, j = vals.length; i < j; i++) {
+							if(vals[i].value == "cats+dogs") {
+								var out = [	{value: "cats", label: "Cats"},
+											{value: "dogs", label: "Dogs"},
+											{value: "cats+dogs", label: "Cats and Dogs"}];
+								fs.setValue(out);
+								return;
+							}
+						}
+						
+					}
+				
+				</script>
+			</div>
+			
 		</form>
 		<div class="buttonArea">
 			Initialize fancySelectJs:
@@ -180,7 +219,7 @@
 			
 			var selects = [];
 			
-			var selectCount = 5;
+			var selectCount = 6;
 		
 			updateLabels();
 			

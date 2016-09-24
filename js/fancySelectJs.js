@@ -28,7 +28,9 @@
 *		-	disabled				This will pass through
 *		-	data-all-index			The index of the all component (this takes precedence over data-all) - credit goes to salesforce for fucking interfering with their html attributes again.  fuck!	
 *		-	data-id					The ID attribute for the new fancySelectJs
-*		-	data-prefix				Any prefix text to appear in the select box - e.g. Sort By: YOUR_SELECTION
+*		-	data-prefix				Any prefix text to appear in the select box - e.g. Sort By: 
+*		-	data-dropdown-class		The class name to apply to the dropdown box
+YOUR_SELECTION
 *
 *	Useful option attributes:
 *		-	data-all				Sets this to an "All" option which silently selects everything
@@ -92,6 +94,7 @@ function fancySelectJs(el) {
 	
 	//Events
 	this.onchange = null;
+	this.skipEvent = false;
 }
 
 /* Misc. */
@@ -244,6 +247,7 @@ fancySelectJs.prototype.init = function(el) {
 	//Store this instance on the original select
 	el.fancySelectJs = this;
 	
+	this.skipEvent = false;
 	this.initializing = false;
 	this.initialized = true;
 }
@@ -277,7 +281,7 @@ fancySelectJs.prototype.buildGui = function(el) {
 	
 	//Create the dropdown
 	var dropdown = doc.createElement("div");
-	dropdown.className = "fancySelectJs_dropdown";
+	dropdown.className = "fancySelectJs_dropdown " + (el.hasAttribute("data-dropdown-class") ? el.getAttribute("data-dropdown-class") : "");
 	if(this.multiple) dropdown.setAttribute("data-multiple", "true");
 	
 	//Fill the dropdown
@@ -422,10 +426,13 @@ fancySelectJs.prototype.updateValues = function(ev) {
 		t.push(this.values[i].value);
 	}
 	$(this.template).val(t);
-	if(this.initialized === true && (typeof ev == "undefined" || !ev.data || ev.data.fireChangeEvent !== false)) {
-		this.fireEvent("change");
-		if(typeof this.onchange == "function") this.onchange();
-	}
+	if(this.skipEvent) this.skipEvent = false;
+	else {
+		if(this.initialized === true && (typeof ev == "undefined" || !ev.data || ev.data.fireChangeEvent !== false)) {
+			this.fireEvent("change");
+			if(typeof this.onchange == "function") this.onchange();
+		}
+	} 
 }
 
 /**
@@ -640,18 +647,55 @@ fancySelectJs.prototype.setValue = function(value) {
 	this.values = [];
 	this.allIndexSelected = false;
 	if((typeof value != "string" && typeof value != "object") || value == null || value == "") return;
-	var o, newValues = fancySelectJs.parseData(value, this.DELIMITER);
+	var t, v, o, parsedValues = [], newValues = fancySelectJs.parseData(value, this.DELIMITER);
 	//Determine the value type
-	if(!Array.isArray(newValues)) throw new TypeError('fancySelectJs.setValue requires either a string or an array to function');
+	if(!Array.isArray(newValues)) throw new TypeError("fancySelectJs.setValue requires either a string or an array to function");
+	//Parse new values into a consistant format
+	for(var i = 0, j = newValues.length; i < j; i++) {
+		o = newValues[i];
+		if(typeof o === "string") parsedValues.push(o);
+		else if(typeof o.value === "string") parsedValues.push(o.value);
+		else throw new TypeError("fancySelectJs.setValue requres either a string, an array of strings, or an array of objects with a value parameter set in order to function");
+	}
 	//Parse the values into the dropdown
 	for(var i = 0, j = this.options.length; i < j; i++) {
 		o = this.options[i];
-		if(newValues.includes(o.value.trim())) {
+		if(parsedValues.includes(o.value.trim())) {
 			this.selectedIndices.push(i);
 			this.values.push(o);
 		}
 	}
-	if(this.initialized) this.updateValues();
+	if(this.initialized) {
+		this.skipEvent = true;
+		this.updateValues();
+	}
+}
+
+/**
+*	Gets the value of the search box
+*/
+fancySelectJs.prototype.getValue = function() {
+	if(!this.initialized) return;
+	return $(this.template).val();
+}
+
+/**
+*	Gets the value of the search box as an array
+*/
+fancySelectJs.prototype.getValueAsArray = function() {
+	if(!this.initialized) return;
+	return this.values.slice(0);
+}
+
+/**
+*	Returns the value of an option at a selected index
+*/
+fancySelectJs.prototype.getOption = function(index) {
+	if(!this.initialized) return;
+	if(typeof index != "number") throw new TypeError("fancySelectJs.getOption requires an Integer value as its index paramer");
+	var l = this.options.length;
+	if(index >= l || index < 0) throw new Error("fancySelectJs.getOption error - Index out of bounds (selected index = " + index + "; maximum index = " + l + ")");
+	return this.options[index];
 }
 
 /**
@@ -674,14 +718,6 @@ fancySelectJs.parseData = function(value, delimiter) {
         return out;
 	} else if(Array.isArray(value)) return value;
 	return null;
-}
-
-/**
-*	Gets the value of the search box
-*/
-fancySelectJs.prototype.getValue = function() {
-	if(!this.initialized) return;
-	return $(this.template).val();
 }
 
 /* State change functions */
@@ -798,7 +834,7 @@ fancySelectJs.prototype.queuePositionDropdown = function() {
 */
 fancySelectJs.prototype.positionDropdown = function() {
 	if(!this.initialized) return;
-    $(this.dropdown).css({top: this.dropdownTop, left: this.dropdownLeft});
+    $(this.dropdown).css({top: this.dropdownTop, left: this.dropdownLeft, minWidth: this.dropdownWidth});
     $(this.dropdown).outerWidth(this.dropdownWidth);
     this.frameRequested = false;
 }
