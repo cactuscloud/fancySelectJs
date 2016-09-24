@@ -173,22 +173,40 @@
 						Cats and Dogs
 					</option>
 				</select>
-				<script>
+				<script>				
+					var lastSelection;//This value is set in the page init below
 					function updateSelect(el) {
+						if(!el.fancySelectJs) return;
 						var fs = el.fancySelectJs;
 						var vals = fs.getValueAsArray();
+						//Has cats+dogs been selected already
+						for(var i = 0, j = lastSelection.length; i < j; i++) {
+							if(lastSelection[i].value === "cats+dogs") {
+								//Remove cats+dogs from the selection
+								for(var x = 0, y = vals.length; x < y; x++) { 
+									if(vals[x].value === "cats+dogs") {
+										vals.splice(x, 1);
+										fs.setValue(vals);
+										lastSelection = vals;
+										return;
+									}
+								}
+								lastSelection = vals;
+								return;
+							}
+						}
+						//If cats+dogs is selected, select both cats and dogs
 						for(var i = 0, j = vals.length; i < j; i++) {
-							if(vals[i].value == "cats+dogs") {
+							if(vals[i].value === "cats+dogs") {
 								var out = [	{value: "cats", label: "Cats"},
 											{value: "dogs", label: "Dogs"},
 											{value: "cats+dogs", label: "Cats and Dogs"}];
 								fs.setValue(out);
+								lastSelection = out;
 								return;
 							}
 						}
-						
 					}
-				
 				</script>
 			</div>
 			
@@ -244,6 +262,11 @@
 				disabled = true;
 				toggleEnabled(document.getElementById("enableButton"));
 				document.getElementById("postInitStuff").style.display = "block";
+				
+				//Set up s5's lastSelection variable
+				var s5 = document.getElementById("s5");
+				lastSelection = s5.fancySelectJs.getValueAsArray();
+				updateSelect(s5);
 			}
 			
 			//Enables or disables all of the fancySelects on this page
