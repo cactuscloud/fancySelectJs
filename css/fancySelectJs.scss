@@ -47,6 +47,7 @@ $prefixColour:		#888;
 		}
 		.prefix {
 			color: $inactiveColour;
+			pointer-events: none;
 		}
 	}
 	//The displayed fancy select text
